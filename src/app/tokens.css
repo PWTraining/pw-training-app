@@ -1,7 +1,7 @@
 /*
-  Brand tokens — PLACEHOLDER THEME.
-  Paul's real colours/fonts/logo replace the values in this file only.
-  Nothing outside this file should hard-code a hex value or font name.
+  Brand tokens — sourced from the PW Training logo (pink/yellow/green/teal,
+  bold black outlines). Swap values here only; nothing outside this file
+  should hard-code a hex value or font name.
 */
 
 :root {
@@ -10,15 +10,20 @@
   --color-surface: #ffffff;
   --color-surface-raised: #ffffff;
   --color-border: #e5e5e5;
-  --color-text: #171717;
+  --color-text: #14171a;
   --color-text-muted: #6b6b6b;
 
-  /* Brand accent — placeholder, swap when branding arrives */
-  --color-brand: #3b5bfd;
+  /* Brand palette, from the logo */
+  --color-brand: #ec1e82; /* PW pink */
   --color-brand-contrast: #ffffff;
+  --color-brand-yellow: #f9c935;
+  --color-brand-green: #3caf64;
+  --color-brand-teal: #2aada0;
+  --color-brand-ink: #14171a; /* logo outline black */
 
-  /* Semantic status */
-  --color-success: #16a34a;
+  /* Semantic status — greens/yellows lean on the brand palette,
+     danger stays a clear red since brand has no red to borrow */
+  --color-success: #3caf64;
   --color-warning: #d97706;
   --color-danger: #dc2626;
 
@@ -68,6 +73,10 @@
   --color-text-muted: var(--color-text-muted);
   --color-brand: var(--color-brand);
   --color-brand-contrast: var(--color-brand-contrast);
+  --color-brand-yellow: var(--color-brand-yellow);
+  --color-brand-green: var(--color-brand-green);
+  --color-brand-teal: var(--color-brand-teal);
+  --color-brand-ink: var(--color-brand-ink);
   --color-success: var(--color-success);
   --color-warning: var(--color-warning);
   --color-danger: var(--color-danger);
