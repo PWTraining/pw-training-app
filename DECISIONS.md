@@ -2,6 +2,13 @@
 
 Settled calls. Do not reopen unless Paul does. Newest at top.
 
+## 2026-07-29 — Visual style: minimal app, bold logo, kept separate
+
+- The app UI (cards, buttons, layout) stays clean/minimal — not the thick-black-outline comic style of the logo.
+- The logo itself is intentionally a separate, bolder register: Paul's reference is '90s rap album art — black-and-white photo with a graffiti-style logo treatment over the top. The mark carries the personality; the product UI stays calm and low-fatigue since it's read daily.
+- Practical effect: brand colours (pink/yellow/green/teal) flow into the tokens file and get used as accents (active states, links, primary buttons), but no thick borders, halftone textures, or outline strokes get added to app chrome.
+- Current logo file is a placeholder — Paul is redesigning it. Tokens file is already set up so swapping the palette later is a one-file edit.
+
 ## 2026-07-29 — Domain / hosting
 
 - pwworld.com.au is registered and DNS-managed via **GoDaddy** (Paul confirmed, screenshot of DNS records tab).
