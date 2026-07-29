@@ -1,0 +1,10 @@
+{
+  "name": "PW Training",
+  "short_name": "PW Training",
+  "description": "1:1 online coaching with Paul Wintle.",
+  "start_url": "/habits",
+  "display": "standalone",
+  "background_color": "#fafafa",
+  "theme_color": "#3b5bfd",
+  "icons": []
+}
