@@ -42,6 +42,24 @@
   --adherence-90: #6dbf45;
   --adherence-100: #2f9e4f;
 
+  /* Program Adherence donut only, a lighter and more vibrant green than the
+     grid's --adherence-90/100 above (grid colours are unchanged). */
+  --ring-green-90: #7bd957;
+  --ring-green-100: #4ade80;
+
+  /* Fixed per-habit identity colours, cycled by a hash of the habit id so
+     each habit keeps the same colour regardless of list order. Used for
+     row accents on Home and the grid header on Progress, never tied to a
+     logged value the way the adherence scale is. */
+  --habit-color-1: #ec1e82;
+  --habit-color-2: #3caf64;
+  --habit-color-3: #f9c935;
+  --habit-color-4: #2aada0;
+  --habit-color-5: #8b5cf6;
+  --habit-color-6: #3b82f6;
+  --habit-color-7: #f97316;
+  --habit-color-8: #ef4444;
+
   /* Type */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -80,6 +98,16 @@
   --color-success: var(--color-success);
   --color-warning: var(--color-warning);
   --color-danger: var(--color-danger);
+  --ring-green-90: var(--ring-green-90);
+  --ring-green-100: var(--ring-green-100);
+  --habit-color-1: var(--habit-color-1);
+  --habit-color-2: var(--habit-color-2);
+  --habit-color-3: var(--habit-color-3);
+  --habit-color-4: var(--habit-color-4);
+  --habit-color-5: var(--habit-color-5);
+  --habit-color-6: var(--habit-color-6);
+  --habit-color-7: var(--habit-color-7);
+  --habit-color-8: var(--habit-color-8);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
 }

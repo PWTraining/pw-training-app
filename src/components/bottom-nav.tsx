@@ -4,8 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const TABS = [
-  { href: "/habits", label: "Habits", icon: "✓" },
+  { href: "/home", label: "Home", icon: "⌂" },
   { href: "/train", label: "Train", icon: "🏋" },
+  { href: "/progress", label: "Progress", icon: "✓" },
+  { href: "/chat", label: "Chat", icon: "💬" },
   { href: "/portal", label: "Portal", icon: "▦" },
 ] as const;
 
@@ -20,9 +22,36 @@ export function BottomNav() {
         background: "color-mix(in srgb, var(--color-surface) 92%, transparent)",
       }}
     >
-      <div className="mx-auto flex max-w-md items-stretch pb-[env(safe-area-inset-bottom)]">
+      <div className="mx-auto flex max-w-md items-end pb-[env(safe-area-inset-bottom)]">
         {TABS.map((tab) => {
           const active = pathname.startsWith(tab.href);
+
+          if (tab.href === "/progress") {
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className="flex flex-1 flex-col items-center gap-1 pb-2"
+                style={{ color: "var(--color-success)" }}
+              >
+                <span
+                  className="-mt-4 flex h-14 w-14 items-center justify-center rounded-full text-2xl font-bold shadow-lg"
+                  style={{
+                    background: "var(--color-success)",
+                    color: "#fff",
+                    boxShadow: active
+                      ? "0 0 0 3px color-mix(in srgb, var(--color-success) 30%, transparent)"
+                      : "0 2px 8px rgba(0,0,0,0.25)",
+                  }}
+                  aria-hidden
+                >
+                  {tab.icon}
+                </span>
+                <span className="text-xs font-semibold">{tab.label}</span>
+              </Link>
+            );
+          }
+
           return (
             <Link
               key={tab.href}

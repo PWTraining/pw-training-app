@@ -94,7 +94,7 @@ export default function TrainPage() {
               Today&rsquo;s session
             </div>
             <div className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>
-              Upper / Lower — Week 4
+              Upper / Lower, Week 4
             </div>
           </div>
           <div className="text-right">

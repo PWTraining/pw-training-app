@@ -30,7 +30,7 @@ export default function PortalPage() {
       <TopBar title="Portal" />
 
       <div className="flex flex-col gap-4 px-4 pt-4 pb-6">
-        <Card title="Win the first 30 days — Alexander Simmonds">
+        <Card title="Win the first 30 days: Alexander Simmonds">
           <p className="mb-3 text-xs leading-relaxed" style={{ color: "var(--color-text-muted)" }}>
             Total food intake and consistent hydration are the two big levers, matched to your
             current training and output at work. Training is full body strength, 3x a week, to
@@ -85,7 +85,7 @@ export default function PortalPage() {
           </button>
         </Card>
 
-        <Card title="Food — current snapshot">
+        <Card title="Food: current snapshot">
           <div className="grid grid-cols-3 gap-2 text-center">
             {[
               { label: "Protein", value: "150–170g" },
@@ -117,7 +117,7 @@ export default function PortalPage() {
 
         <Card title="Roadmap">
           <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
-            Nothing logged yet — your visual roadmap (calls, 4-week marks, testing days) shows up
+            Nothing logged yet. Your visual roadmap (calls, 4-week marks, testing days) shows up
             here once Paul builds your plan.
           </p>
         </Card>
@@ -132,7 +132,7 @@ export default function PortalPage() {
             </div>
             <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
               Pulled from habits, training, mood and check-ins. Missing data is redistributed
-              across what&rsquo;s tracked — it&rsquo;s never read as failure.
+              across what&rsquo;s tracked. It&rsquo;s never read as failure.
             </p>
           </div>
         </Card>
