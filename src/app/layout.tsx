@@ -16,10 +16,20 @@ export const metadata: Metadata = {
   title: "PW Training",
   description: "1:1 online coaching with Paul Wintle.",
   manifest: "/manifest.webmanifest",
+  // iOS ignores the manifest — it needs these to launch full-screen from
+  // the home screen with the right name and icon.
+  appleWebApp: {
+    capable: true,
+    title: "PW Training",
+    statusBarStyle: "default",
+  },
+  icons: {
+    apple: "/icon-192.png",
+  },
 };
 
 export const viewport = {
-  themeColor: "#3b5bfd",
+  themeColor: "#ec1e82",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
