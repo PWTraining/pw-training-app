@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { MenuButton, MenuDrawer } from "./menu-drawer";
+import { Wordmark } from "./wordmark";
 
-export function TopBar({ title, right }: { title: string; right?: React.ReactNode }) {
+export function TopBar() {
   const [open, setOpen] = useState(false);
 
   return (
@@ -15,13 +16,8 @@ export function TopBar({ title, right }: { title: string; right?: React.ReactNod
           background: "color-mix(in srgb, var(--color-surface) 92%, transparent)",
         }}
       >
-        <h1 className="text-lg font-semibold" style={{ color: "var(--color-text)" }}>
-          {title}
-        </h1>
-        <div className="flex items-center gap-1">
-          {right}
-          <MenuButton onClick={() => setOpen(true)} />
-        </div>
+        <MenuButton onClick={() => setOpen(true)} />
+        <Wordmark />
       </header>
 
       <MenuDrawer open={open} onClose={() => setOpen(false)} />

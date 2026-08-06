@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { AdherenceRing } from "./adherence-ring";
 import {
-  MOCK_TRAINING_SESSIONS,
+  MOCK_TRAINING_SESSIONS_BY_PERIOD,
   MOCK_WEEKLY_REVIEWS,
   MOCK_CHECKIN_CALLS,
   MOCK_CHECKIN_CALLS_TOTAL,
   type WeeklyReviewStatus,
   type CallStatus,
 } from "@/lib/progress-mocks";
+import type { Timeframe } from "@/lib/habits";
 
 const STATUS_COLOR: Record<WeeklyReviewStatus | CallStatus, string> = {
   Done: "var(--color-success)",
@@ -19,23 +20,49 @@ const STATUS_COLOR: Record<WeeklyReviewStatus | CallStatus, string> = {
   Upcoming: "var(--color-text-muted)",
 };
 
-export function TrainingAdherenceCard() {
-  const { completed, planned } = MOCK_TRAINING_SESSIONS;
+const PERIOD_NOUN: Record<Timeframe, string> = {
+  Daily: "today",
+  Weekly: "this week",
+  Monthly: "this block",
+  Yearly: "this year",
+};
+
+export function TrainingAdherenceCard({
+  timeframe,
+  cardioPct,
+}: {
+  timeframe: Timeframe;
+  cardioPct: number;
+}) {
+  const { completed, planned } = MOCK_TRAINING_SESSIONS_BY_PERIOD[timeframe];
   const pct = planned > 0 ? Math.round((completed / planned) * 100) : 0;
 
   return (
     <section
-      className="flex items-center gap-4 rounded-[var(--radius-lg)] border p-4"
+      className="rounded-[var(--radius-lg)] border p-4"
       style={{ borderColor: "var(--color-border)" }}
     >
-      <AdherenceRing pct={pct} />
-      <div className="flex-1">
-        <div className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>
-          Training Adherence
+      <div className="flex items-center gap-4">
+        <AdherenceRing pct={pct} />
+        <div className="flex-1">
+          <div className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>
+            Training Adherence
+          </div>
+          <div className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+            {completed} of {planned} sessions completed {PERIOD_NOUN[timeframe]}
+          </div>
         </div>
-        <div className="text-xs" style={{ color: "var(--color-text-muted)" }}>
-          {completed} of {planned} sessions completed this week
-        </div>
+      </div>
+      <div
+        className="mt-3 flex items-center justify-between border-t pt-3"
+        style={{ borderColor: "var(--color-border)" }}
+      >
+        <span className="text-xs font-medium" style={{ color: "var(--color-text-muted)" }}>
+          Cardio
+        </span>
+        <span className="text-sm font-semibold tabular-nums" style={{ color: "var(--color-text)" }}>
+          {cardioPct}%
+        </span>
       </div>
     </section>
   );

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { TopBar } from "@/components/top-bar";
+import { todaysSession } from "@/lib/progress-mocks";
 
 type SetLog = { weight: string; reps: string; done: boolean };
 
@@ -56,6 +57,7 @@ const INITIAL: Exercise[] = [
 
 export default function TrainPage() {
   const [exercises, setExercises] = useState(INITIAL);
+  const session = useMemo(() => todaysSession(), []);
 
   const totalReps = useMemo(
     () =>
@@ -82,7 +84,7 @@ export default function TrainPage() {
 
   return (
     <div>
-      <TopBar title="Train" />
+      <TopBar />
 
       <div className="flex flex-col gap-4 px-4 pt-4">
         <div
@@ -94,7 +96,7 @@ export default function TrainPage() {
               Today&rsquo;s session
             </div>
             <div className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>
-              Upper / Lower, Week 4
+              {session ?? "Rest day"}
             </div>
           </div>
           <div className="text-right">

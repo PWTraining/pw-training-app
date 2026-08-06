@@ -61,7 +61,15 @@ export function BottomNav() {
                 color: active ? "var(--color-brand)" : "var(--color-text-muted)",
               }}
             >
-              <span className="text-lg leading-none" aria-hidden>
+              <span
+                className="flex h-7 w-11 items-center justify-center rounded-full text-lg leading-none transition-colors"
+                style={{
+                  background: active
+                    ? "color-mix(in srgb, var(--color-brand) 14%, transparent)"
+                    : "transparent",
+                }}
+                aria-hidden
+              >
                 {tab.icon}
               </span>
               {tab.label}

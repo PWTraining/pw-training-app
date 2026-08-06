@@ -1,6 +1,21 @@
 "use client";
 
 import { useHabits } from "@/lib/habits-context";
+import type { HabitHistoryEntry } from "@/lib/habits-context";
+
+const ACTION_LABEL: Record<HabitHistoryEntry["action"], string> = {
+  added: "Added",
+  archived: "Archived",
+  restored: "Restored",
+  renamed: "Renamed to",
+};
+
+const ACTION_COLOR: Record<HabitHistoryEntry["action"], string> = {
+  added: "var(--color-success)",
+  archived: "var(--color-danger)",
+  restored: "var(--color-success)",
+  renamed: "var(--color-text-muted)",
+};
 
 function formatWhen(iso: string) {
   return new Date(iso).toLocaleString(undefined, {
@@ -56,12 +71,9 @@ export function HabitHistorySheet({ open, onClose }: { open: boolean; onClose: (
                   <div className="text-xs" style={{ color: "var(--color-text)" }}>
                     <span
                       className="font-semibold"
-                      style={{
-                        color:
-                          entry.action === "added" ? "var(--color-success)" : "var(--color-danger)",
-                      }}
+                      style={{ color: ACTION_COLOR[entry.action] }}
                     >
-                      {entry.action === "added" ? "Added" : "Removed"}
+                      {ACTION_LABEL[entry.action]}
                     </span>{" "}
                     {entry.label}
                   </div>

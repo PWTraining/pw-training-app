@@ -2,9 +2,18 @@
 // backend yet (training adherence, weekly reviews, check-in calls). Same
 // mock-first approach as the rest of the habits system.
 
-export const MOCK_TRAINING_SESSIONS = {
-  completed: 4,
-  planned: 5,
+import type { Timeframe } from "./habits";
+
+// Sessions completed/planned per Program Adherence timeframe — there's no
+// real Train data model yet, so these are plausible mock progressions.
+export const MOCK_TRAINING_SESSIONS_BY_PERIOD: Record<
+  Timeframe,
+  { completed: number; planned: number }
+> = {
+  Daily: { completed: 1, planned: 1 },
+  Weekly: { completed: 4, planned: 5 },
+  Monthly: { completed: 14, planned: 20 },
+  Yearly: { completed: 168, planned: 240 },
 };
 
 export type WeeklyReviewStatus = "Done" | "Missed" | "Pending";

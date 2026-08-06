@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { adherenceColor, habitColor } from "@/lib/habits";
+import { adherenceColor, sliderFill } from "@/lib/habits";
 import { useHabits } from "@/lib/habits-context";
-
-const TICKS = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
 
 export function CheckInRow({
   id,
@@ -25,7 +23,6 @@ export function CheckInRow({
   const [showComment, setShowComment] = useState(false);
   const [draft, setDraft] = useState("");
 
-  const accent = habitColor(id);
   const fill = adherenceColor(value);
   const comments = commentsFor(id);
 
@@ -42,24 +39,17 @@ export function CheckInRow({
       style={{ borderBottom: isLast ? "none" : "1px solid var(--color-border)" }}
     >
       <div className="mb-2 flex items-center gap-2.5">
-        <span
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-base leading-none"
-          style={{ background: `color-mix(in srgb, ${accent} 18%, transparent)` }}
-          aria-hidden
-        >
+        <span className="text-2xl leading-none" aria-hidden>
           {emoji}
         </span>
         <span className="flex-1 text-sm font-medium" style={{ color: "var(--color-text)" }}>
           {label}
         </span>
-        <span className="text-sm font-semibold tabular-nums" style={{ color: fill }}>
-          {value}%
-        </span>
         <button
           type="button"
           onClick={() => setShowComment((v) => !v)}
           aria-label={`Comment on ${label}`}
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-sm"
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs"
           style={{
             borderColor: comments.length > 0 ? "var(--color-brand)" : "var(--color-border)",
             color: comments.length > 0 ? "var(--color-brand)" : "var(--color-text-muted)",
@@ -67,17 +57,9 @@ export function CheckInRow({
         >
           💬
         </button>
-      </div>
-
-      <div className="mb-1 flex">
-        {TICKS.map((t) => (
-          <div key={t} className="flex flex-1 justify-center">
-            <div
-              className="h-1.5 w-1.5 rounded-full"
-              style={{ background: adherenceColor(t), opacity: t <= value ? 1 : 0.25 }}
-            />
-          </div>
-        ))}
+        <span className="text-sm font-semibold tabular-nums" style={{ color: fill }}>
+          {value}%
+        </span>
       </div>
 
       <input
@@ -88,12 +70,20 @@ export function CheckInRow({
         step={10}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        style={
-          {
-            "--slider-fill": `linear-gradient(to right, ${accent} 0%, ${accent} ${value}%, var(--color-border) ${value}%, var(--color-border) 100%)`,
-          } as React.CSSProperties
-        }
+        style={{ "--slider-fill": sliderFill(value) } as React.CSSProperties}
       />
+
+      <div className="mt-1 flex justify-between px-0.5">
+        {[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((tick) => (
+          <span
+            key={tick}
+            className="text-[8px] tabular-nums"
+            style={{ color: "var(--color-text-muted)" }}
+          >
+            {tick}%
+          </span>
+        ))}
+      </div>
 
       {showComment && (
         <div className="mt-2.5 flex flex-col gap-2">
@@ -126,7 +116,7 @@ export function CheckInRow({
               className="rounded-[var(--radius-sm)] px-3 text-xs font-medium"
               style={{ background: "var(--color-brand)", color: "var(--color-brand-contrast)" }}
             >
-              Save
+              Submit
             </button>
           </div>
         </div>

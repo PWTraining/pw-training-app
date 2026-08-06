@@ -1,36 +1,28 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { MenuButton, MenuDrawer } from "@/components/menu-drawer";
-import { Wordmark } from "@/components/wordmark";
+import Link from "next/link";
+import { TopBar } from "@/components/top-bar";
 import { WeatherPill } from "@/components/weather-pill";
 import { CheckInRow } from "@/components/checkin-row";
-import { ProgramAdherence, type Timeframe } from "@/components/program-adherence";
+import { ProgramAdherence } from "@/components/program-adherence";
 import { useHabits } from "@/lib/habits-context";
-import {
-  MOCK_TRAINING_PCT,
-  MOCK_TRAINING_PCT_MONTHLY,
-  MOCK_TRAINING_PCT_YEARLY,
-  MOCK_HABITS_PCT_YEARLY,
-  MOCK_COACH_COMMENT,
-  weeklyPct,
-  monthlyPct,
-} from "@/lib/habits";
+import { MOCK_TRAINING_PCT, MOCK_COACH_COMMENT, weeklyPct, type Timeframe } from "@/lib/habits";
+import { todaysSession } from "@/lib/train-schedule";
+
+const HOME_TIMEFRAMES: Timeframe[] = ["Daily", "Weekly"];
+const HOME_TIMEFRAME_LABELS = { Daily: "Today", Weekly: "This week" };
 
 export default function HomePage() {
   const { habits, dayComment, setDayComment, todayValue, setTodayValue } = useHabits();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [draftComment, setDraftComment] = useState(dayComment);
   const [saved, setSaved] = useState(false);
+  const [timeframe, setTimeframe] = useState<Timeframe>("Weekly");
+  const session = useMemo(() => todaysSession(), []);
 
-  const adherenceValues = useMemo<Record<Timeframe, number>>(() => {
+  const adherenceValues = useMemo<Partial<Record<Timeframe, number>>>(() => {
     if (habits.length === 0) {
-      return {
-        Daily: MOCK_TRAINING_PCT,
-        Weekly: MOCK_TRAINING_PCT,
-        Monthly: MOCK_TRAINING_PCT_MONTHLY,
-        Yearly: MOCK_TRAINING_PCT_YEARLY,
-      };
+      return { Daily: MOCK_TRAINING_PCT, Weekly: MOCK_TRAINING_PCT };
     }
 
     const dailyHabits =
@@ -38,15 +30,10 @@ export default function HomePage() {
     const weeklyHabits =
       habits.reduce((sum, habit) => sum + weeklyPct(habit.id, todayValue(habit.id)), 0) /
       habits.length;
-    const monthlyHabits =
-      habits.reduce((sum, habit) => sum + monthlyPct(habit.id, todayValue(habit.id)), 0) /
-      habits.length;
 
     return {
       Daily: Math.round((dailyHabits + MOCK_TRAINING_PCT) / 2),
       Weekly: Math.round((weeklyHabits + MOCK_TRAINING_PCT) / 2),
-      Monthly: Math.round((monthlyHabits + MOCK_TRAINING_PCT_MONTHLY) / 2),
-      Yearly: Math.round((MOCK_HABITS_PCT_YEARLY + MOCK_TRAINING_PCT_YEARLY) / 2),
     };
   }, [habits, todayValue]);
 
@@ -58,17 +45,7 @@ export default function HomePage() {
 
   return (
     <div>
-      <header
-        className="sticky top-0 z-30 flex items-center justify-between border-b px-4 py-3 backdrop-blur"
-        style={{
-          borderColor: "var(--color-border)",
-          background: "color-mix(in srgb, var(--color-surface) 92%, transparent)",
-        }}
-      >
-        <MenuButton onClick={() => setMenuOpen(true)} />
-        <Wordmark />
-      </header>
-      <MenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <TopBar />
 
       <div className="flex flex-col gap-5 px-4 pt-4 pb-6">
         <section className="flex items-start justify-between gap-3">
@@ -83,20 +60,71 @@ export default function HomePage() {
           <WeatherPill />
         </section>
 
-        <ProgramAdherence values={adherenceValues} />
+        <ProgramAdherence
+          values={adherenceValues}
+          timeframe={timeframe}
+          onTimeframeChange={setTimeframe}
+          timeframes={HOME_TIMEFRAMES}
+          labels={HOME_TIMEFRAME_LABELS}
+        />
+
+        {session ? (
+          <Link
+            href="/train"
+            className="flex items-center justify-between gap-3 rounded-[var(--radius-lg)] border p-4 transition-opacity active:opacity-80"
+            style={{
+              borderColor: "var(--color-brand)",
+              background: "color-mix(in srgb, var(--color-brand) 8%, var(--color-surface))",
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-2xl leading-none" aria-hidden>
+                🏋️
+              </span>
+              <div>
+                <div className="text-base font-bold" style={{ color: "var(--color-brand)" }}>
+                  Today&rsquo;s Session
+                </div>
+                <div className="text-sm" style={{ color: "var(--color-text)" }}>
+                  {session}
+                </div>
+              </div>
+            </div>
+            <span className="text-lg" style={{ color: "var(--color-brand)" }} aria-hidden>
+              ›
+            </span>
+          </Link>
+        ) : (
+          <div
+            className="flex items-center gap-3 rounded-[var(--radius-lg)] border p-4"
+            style={{
+              borderColor: "var(--color-brand)",
+              background: "color-mix(in srgb, var(--color-brand) 8%, var(--color-surface))",
+            }}
+          >
+            <span className="text-2xl leading-none" aria-hidden>
+              ☯️
+            </span>
+            <div>
+              <div className="text-base font-bold" style={{ color: "var(--color-brand)" }}>
+                Today&rsquo;s Session
+              </div>
+              <div className="text-sm" style={{ color: "var(--color-text)" }}>
+                Rest day
+              </div>
+            </div>
+          </div>
+        )}
 
         {MOCK_COACH_COMMENT && (
           <section
             className="rounded-[var(--radius-lg)] border p-4"
-            style={{
-              borderColor: "var(--color-brand)",
-              background: "color-mix(in srgb, var(--color-brand) 6%, var(--color-surface))",
-            }}
+            style={{ borderColor: "var(--color-border)", background: "var(--color-surface)" }}
           >
-            <h2 className="mb-1 text-xs font-semibold" style={{ color: "var(--color-brand)" }}>
+            <h2 className="mb-1 text-base font-bold" style={{ color: "var(--color-text)" }}>
               Coach&rsquo;s Comment
             </h2>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--color-text)" }}>
+            <p className="text-sm leading-relaxed font-bold" style={{ color: "var(--color-text)" }}>
               {MOCK_COACH_COMMENT}
             </p>
           </section>
@@ -106,11 +134,11 @@ export default function HomePage() {
           className="rounded-[var(--radius-lg)] border p-4"
           style={{ borderColor: "var(--color-border)" }}
         >
-          <h2 className="mb-1 text-sm font-semibold" style={{ color: "var(--color-text)" }}>
+          <h2 className="mb-1 text-sm font-bold" style={{ color: "var(--color-text)" }}>
             Daily Check-In
           </h2>
 
-          {habits.map((habit) => (
+          {habits.map((habit, i) => (
             <CheckInRow
               key={habit.id}
               id={habit.id}
@@ -118,13 +146,26 @@ export default function HomePage() {
               label={habit.label}
               value={todayValue(habit.id)}
               onChange={(v) => setTodayValue(habit.id, v)}
+              isLast={i === habits.length - 1}
             />
           ))}
+        </section>
+
+        <section
+          className="rounded-[var(--radius-lg)] border p-4"
+          style={{ borderColor: "var(--color-border)" }}
+        >
+          <h2 className="mb-1 text-sm font-semibold" style={{ color: "var(--color-text)" }}>
+            Body, Mind &amp; Spirit
+          </h2>
+          <p className="mb-2 text-xs" style={{ color: "var(--color-text-muted)" }}>
+            Rate how you generally feel today.
+          </p>
 
           <CheckInRow
             id="physical"
             emoji="💪"
-            label="Physical"
+            label="Body"
             value={todayValue("physical")}
             onChange={(v) => setTodayValue("physical", v)}
           />
@@ -134,6 +175,13 @@ export default function HomePage() {
             label="Mind"
             value={todayValue("mind")}
             onChange={(v) => setTodayValue("mind", v)}
+          />
+          <CheckInRow
+            id="spirit"
+            emoji="☮️"
+            label="Spirit"
+            value={todayValue("spirit")}
+            onChange={(v) => setTodayValue("spirit", v)}
             isLast
           />
         </section>
@@ -143,12 +191,12 @@ export default function HomePage() {
           style={{ borderColor: "var(--color-border)" }}
         >
           <h2 className="mb-2 text-sm font-semibold" style={{ color: "var(--color-text)" }}>
-            Member comment
+            Daily Reflection
           </h2>
           <textarea
             value={draftComment}
             onChange={(e) => setDraftComment(e.target.value)}
-            placeholder="Leave a comment for Paul (optional)"
+            placeholder="Anything to add today? (optional)"
             rows={2}
             className="w-full resize-none rounded-[var(--radius-sm)] border px-3 py-2 text-sm outline-none"
             style={{

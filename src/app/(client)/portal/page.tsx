@@ -1,14 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { TopBar } from "@/components/top-bar";
-
-const NON_NEGOTIABLES = [
-  { emoji: "🥗", title: "Meal Consistency", detail: "Eat breakfast, lunch, and dinner" },
-  { emoji: "🎯", title: "Protein Target", detail: "One source of protein in every meal" },
-  { emoji: "💧", title: "Daily Hydration", detail: "2.5L of water plus 1L of coconut water on running days" },
-  { emoji: "🏋", title: "Strength Training", detail: "Full body x 3 days a week" },
-  { emoji: "☮️", title: "Down Regulate Before Eating", detail: "Three deep breaths, smell your food, look at it" },
-];
+import { PHASES, MOCK_METRICS, MOCK_HEALTH_STATS, MOCK_FOOD_SNAPSHOT } from "@/lib/portal-mocks";
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -24,58 +18,68 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
   );
 }
 
+function StatGrid({ stats }: { stats: { label: string; value: string }[] }) {
+  return (
+    <div className="grid grid-cols-3 gap-2 text-center">
+      {stats.map((stat) => (
+        <div
+          key={stat.label}
+          className="rounded-[var(--radius-sm)] border py-2"
+          style={{ borderColor: "var(--color-border)" }}
+        >
+          <div className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>
+            {stat.value}
+          </div>
+          <div className="text-[10px]" style={{ color: "var(--color-text-muted)" }}>
+            {stat.label}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function PortalPage() {
+  const currentPhase = PHASES[PHASES.length - 1];
+
   return (
     <div>
-      <TopBar title="Portal" />
+      <TopBar />
 
       <div className="flex flex-col gap-4 px-4 pt-4 pb-6">
-        <Card title="Win the first 30 days: Alexander Simmonds">
-          <p className="mb-3 text-xs leading-relaxed" style={{ color: "var(--color-text-muted)" }}>
-            Total food intake and consistent hydration are the two big levers, matched to your
-            current training and output at work. Training is full body strength, 3x a week, to
-            maximise muscle growth.
-          </p>
-          <div className="flex flex-col gap-2">
-            {NON_NEGOTIABLES.map((item) => (
-              <div key={item.title} className="flex items-start gap-2.5">
-                <span className="text-lg leading-none" aria-hidden>
-                  {item.emoji}
-                </span>
-                <div>
-                  <div className="text-xs font-semibold" style={{ color: "var(--color-text)" }}>
-                    {item.title}
-                  </div>
-                  <div className="text-[11px]" style={{ color: "var(--color-text-muted)" }}>
-                    {item.detail}
-                  </div>
-                </div>
-              </div>
-            ))}
+        <Link
+          href="/portal/phases"
+          className="flex items-center justify-between rounded-[var(--radius-lg)] border p-4"
+          style={{ borderColor: "var(--color-border)" }}
+        >
+          <div>
+            <div className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+              Current phase
+            </div>
+            <div className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>
+              {currentPhase.name}
+            </div>
           </div>
-        </Card>
+          <span className="text-sm" style={{ color: "var(--color-text-muted)" }} aria-hidden>
+            &rsaquo;
+          </span>
+        </Link>
 
-        <Card title="Health & metrics snapshot">
-          <div className="grid grid-cols-3 gap-2 text-center">
-            {[
-              { label: "Weight", value: "88.0kg" },
-              { label: "Bench 1RM", value: "100kg" },
-              { label: "5km", value: "24:10" },
-            ].map((stat) => (
-              <div
-                key={stat.label}
-                className="rounded-[var(--radius-sm)] border py-2"
-                style={{ borderColor: "var(--color-border)" }}
-              >
-                <div className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>
-                  {stat.value}
-                </div>
-                <div className="text-[10px]" style={{ color: "var(--color-text-muted)" }}>
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </div>
+        <Link
+          href="/portal/documents"
+          className="flex items-center justify-between rounded-[var(--radius-lg)] border p-4"
+          style={{ borderColor: "var(--color-border)" }}
+        >
+          <span className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>
+            📋 Documents
+          </span>
+          <span className="text-sm" style={{ color: "var(--color-text-muted)" }} aria-hidden>
+            &rsaquo;
+          </span>
+        </Link>
+
+        <Card title="Metrics & Testing">
+          <StatGrid stats={MOCK_METRICS} />
           <button
             type="button"
             className="mt-3 w-full rounded-md border py-2 text-xs font-medium"
@@ -85,27 +89,19 @@ export default function PortalPage() {
           </button>
         </Card>
 
-        <Card title="Food: current snapshot">
-          <div className="grid grid-cols-3 gap-2 text-center">
-            {[
-              { label: "Protein", value: "150–170g" },
-              { label: "Carbs", value: "380–400g" },
-              { label: "Fat", value: "70–90g" },
-            ].map((macro) => (
-              <div
-                key={macro.label}
-                className="rounded-[var(--radius-sm)] border py-2"
-                style={{ borderColor: "var(--color-border)" }}
-              >
-                <div className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>
-                  {macro.value}
-                </div>
-                <div className="text-[10px]" style={{ color: "var(--color-text-muted)" }}>
-                  {macro.label}
-                </div>
-              </div>
-            ))}
-          </div>
+        <Card title="Health">
+          <StatGrid stats={MOCK_HEALTH_STATS} />
+        </Card>
+
+        <Card title="Food">
+          <StatGrid
+            stats={[
+              { label: "Calories", value: MOCK_FOOD_SNAPSHOT.calories },
+              { label: "Protein", value: MOCK_FOOD_SNAPSHOT.protein },
+              { label: "Carbs", value: MOCK_FOOD_SNAPSHOT.carbs },
+              { label: "Fat", value: MOCK_FOOD_SNAPSHOT.fat },
+            ]}
+          />
           <a
             href="#"
             className="mt-3 block text-center text-xs font-medium"
@@ -113,13 +109,6 @@ export default function PortalPage() {
           >
             View micronutrient audit ▸
           </a>
-        </Card>
-
-        <Card title="Roadmap">
-          <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
-            Nothing logged yet. Your visual roadmap (calls, 4-week marks, testing days) shows up
-            here once Paul builds your plan.
-          </p>
         </Card>
 
         <Card title="Overall adherence">

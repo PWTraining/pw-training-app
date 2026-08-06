@@ -10,7 +10,7 @@ const DAY_COMMENT_KEY = "pw-day-comment";
 const TODAY_VALUES_KEY = "pw-today-values";
 
 export type HabitHistoryEntry = {
-  action: "added" | "removed";
+  action: "added" | "archived" | "restored" | "renamed";
   label: string;
   at: string;
 };
@@ -35,6 +35,7 @@ const DEFAULT_TODAY_VALUES: TodayValues = {
   phone: 0,
   physical: 70,
   mind: 70,
+  spirit: 80,
   training: 80,
   cardio: 60,
 };
@@ -42,7 +43,11 @@ const DEFAULT_TODAY_VALUES: TodayValues = {
 type HabitsContextValue = {
   habits: Habit[];
   addHabit: (habit: Habit) => void;
-  removeHabit: (id: string) => void;
+  archiveHabit: (id: string) => void;
+  restoreHabit: (id: string) => void;
+  renameHabit: (id: string, label: string) => void;
+  setHabitEmoji: (id: string, emoji: string) => void;
+  reorderHabits: (orderedIds: string[]) => void;
   history: HabitHistoryEntry[];
   commentsFor: (habitId: string) => StoredComment[];
   hasComments: (habitId: string) => boolean;
@@ -127,14 +132,48 @@ export function HabitsProvider({ children }: { children: React.ReactNode }) {
           { action: "added", label: habit.label, at: new Date().toISOString() },
         ]);
       },
-      removeHabit: (id) => {
+      archiveHabit: (id) => {
         const target = habits.find((h) => h.id === id);
         if (!target) return;
-        setHabits((prev) => prev.filter((h) => h.id !== id));
+        setHabits((prev) => prev.map((h) => (h.id === id ? { ...h, archived: true } : h)));
         setHistory((prev) => [
           ...prev,
-          { action: "removed", label: target.label, at: new Date().toISOString() },
+          { action: "archived", label: target.label, at: new Date().toISOString() },
         ]);
+      },
+      restoreHabit: (id) => {
+        const target = habits.find((h) => h.id === id);
+        if (!target) return;
+        setHabits((prev) => prev.map((h) => (h.id === id ? { ...h, archived: false } : h)));
+        setHistory((prev) => [
+          ...prev,
+          { action: "restored", label: target.label, at: new Date().toISOString() },
+        ]);
+      },
+      renameHabit: (id, label) => {
+        const trimmed = label.trim();
+        if (!trimmed) return;
+        setHabits((prev) => prev.map((h) => (h.id === id ? { ...h, label: trimmed } : h)));
+        setHistory((prev) => [
+          ...prev,
+          { action: "renamed", label: trimmed, at: new Date().toISOString() },
+        ]);
+      },
+      setHabitEmoji: (id, emoji) => {
+        setHabits((prev) => prev.map((h) => (h.id === id ? { ...h, emoji } : h)));
+      },
+      // Takes the new order for a subset of habits (the active ones being
+      // dragged) and reconciles it against the full list, leaving anything
+      // not included (e.g. archived habits) in place at the end.
+      reorderHabits: (orderedIds) => {
+        setHabits((prev) => {
+          const byId = new Map(prev.map((h) => [h.id, h]));
+          const reordered = orderedIds
+            .map((id) => byId.get(id))
+            .filter((h): h is Habit => !!h);
+          const remaining = prev.filter((h) => !orderedIds.includes(h.id));
+          return [...reordered, ...remaining];
+        });
       },
       history,
       commentsFor: (habitId) => comments[habitId] ?? [],

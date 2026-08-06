@@ -1,10 +1,14 @@
 "use client";
 
+import { useState } from "react";
+import { HabitHistorySheet } from "./habit-history-sheet";
+
 const MENU_ITEMS = [
   "Community chat",
   "Resources",
   "Other ways to work with Paul",
   "Progress photos",
+  "Habit history",
   "My to-do list",
   "Food resources",
   "Settings",
@@ -25,7 +29,16 @@ export function MenuButton({ onClick }: { onClick: () => void }) {
 }
 
 export function MenuDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [historyOpen, setHistoryOpen] = useState(false);
+
   if (!open) return null;
+
+  function handleItem(item: string) {
+    if (item === "Habit history") {
+      setHistoryOpen(true);
+      return;
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
@@ -52,6 +65,7 @@ export function MenuDrawer({ open, onClose }: { open: boolean; onClose: () => vo
           <button
             key={item}
             type="button"
+            onClick={() => handleItem(item)}
             className="rounded-lg px-3 py-2.5 text-left text-sm"
             style={{ color: "var(--color-text)" }}
           >
@@ -59,6 +73,8 @@ export function MenuDrawer({ open, onClose }: { open: boolean; onClose: () => vo
           </button>
         ))}
       </div>
+
+      <HabitHistorySheet open={historyOpen} onClose={() => setHistoryOpen(false)} />
     </div>
   );
 }

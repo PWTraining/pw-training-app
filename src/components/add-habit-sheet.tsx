@@ -2,10 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { useHabits } from "@/lib/habits-context";
+import { MAX_ACTIVE_HABITS } from "@/lib/habits";
 import {
   HABIT_CATALOG,
   CATEGORY_EMOJI,
   STRENGTH_COLOR,
+  type CatalogEntry,
   type CatalogCategory,
 } from "@/lib/habit-catalog";
 
@@ -17,7 +19,7 @@ const CATEGORIES: CatalogCategory[] = [
   "Stress Tolerance & Anxiety",
 ];
 
-const QUICK_EMOJI = ["🎯", "💧", "🥗", "☀️", "📱", "🧘", "😴", "💪", "📚", "🚶"];
+export const QUICK_EMOJI = ["🎯", "💧", "🥗", "☀️", "📱", "🧘", "😴", "💪", "📚", "🚶"];
 
 function slugify(label: string) {
   return label
@@ -33,8 +35,12 @@ export function AddHabitSheet({ open, onClose }: { open: boolean; onClose: () =>
   const [category, setCategory] = useState<CatalogCategory | "All">("All");
   const [customEmoji, setCustomEmoji] = useState("🎯");
   const [customLabel, setCustomLabel] = useState("");
+  const [why, setWhy] = useState("");
+  const [selectedEntry, setSelectedEntry] = useState<CatalogEntry | null>(null);
 
-  const activeIds = useMemo(() => new Set(habits.map((h) => h.id)), [habits]);
+  const activeHabits = useMemo(() => habits.filter((h) => !h.archived), [habits]);
+  const activeIds = useMemo(() => new Set(activeHabits.map((h) => h.id)), [activeHabits]);
+  const atLimit = activeHabits.length >= MAX_ACTIVE_HABITS;
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -47,20 +53,47 @@ export function AddHabitSheet({ open, onClose }: { open: boolean; onClose: () =>
 
   if (!open) return null;
 
-  function addFromCatalog(id: string, label: string, cat: CatalogCategory) {
-    addHabit({ id, emoji: CATEGORY_EMOJI[cat], label });
+  function reset() {
+    setWhy("");
+    setSelectedEntry(null);
+    setCustomLabel("");
+  }
+
+  function closeSheet() {
+    reset();
+    onClose();
+  }
+
+  function confirmFromCatalog() {
+    if (!selectedEntry || atLimit) return;
+    const reason = why.trim();
+    if (!reason) return;
+    addHabit({
+      id: selectedEntry.id,
+      emoji: CATEGORY_EMOJI[selectedEntry.category],
+      label: selectedEntry.label,
+      why: reason,
+    });
+    reset();
   }
 
   function addCustom() {
+    if (atLimit) return;
     const label = customLabel.trim();
-    if (!label) return;
-    addHabit({ id: slugify(label) || `habit-${Date.now()}`, emoji: customEmoji || "🎯", label });
-    setCustomLabel("");
+    const reason = why.trim();
+    if (!label || !reason) return;
+    addHabit({
+      id: slugify(label) || `habit-${Date.now()}`,
+      emoji: customEmoji || "🎯",
+      label,
+      why: reason,
+    });
+    reset();
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
-      <button aria-label="Close" className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <button aria-label="Close" className="absolute inset-0 bg-black/40" onClick={closeSheet} />
       <div
         className="relative flex max-h-[85vh] w-full max-w-md flex-col rounded-t-[var(--radius-lg)] p-4"
         style={{ background: "var(--color-surface-raised)" }}
@@ -71,7 +104,7 @@ export function AddHabitSheet({ open, onClose }: { open: boolean; onClose: () =>
           </h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={closeSheet}
             aria-label="Close"
             className="text-xl"
             style={{ color: "var(--color-text)" }}
@@ -80,10 +113,26 @@ export function AddHabitSheet({ open, onClose }: { open: boolean; onClose: () =>
           </button>
         </div>
 
+        {atLimit && (
+          <p
+            className="mb-3 rounded-[var(--radius-sm)] px-3 py-2 text-xs"
+            style={{
+              background: "color-mix(in srgb, var(--color-danger) 10%, transparent)",
+              color: "var(--color-danger)",
+            }}
+          >
+            You&rsquo;ve reached the {MAX_ACTIVE_HABITS} habit limit. Archive one first to add
+            another.
+          </p>
+        )}
+
         <div className="mb-3 flex gap-2">
           <button
             type="button"
-            onClick={() => setMode("browse")}
+            onClick={() => {
+              setMode("browse");
+              reset();
+            }}
             className="flex-1 rounded-full border py-1.5 text-xs font-medium"
             style={{
               borderColor: mode === "browse" ? "var(--color-brand)" : "var(--color-border)",
@@ -95,7 +144,10 @@ export function AddHabitSheet({ open, onClose }: { open: boolean; onClose: () =>
           </button>
           <button
             type="button"
-            onClick={() => setMode("custom")}
+            onClick={() => {
+              setMode("custom");
+              reset();
+            }}
             className="flex-1 rounded-full border py-1.5 text-xs font-medium"
             style={{
               borderColor: mode === "custom" ? "var(--color-brand)" : "var(--color-border)",
@@ -114,12 +166,12 @@ export function AddHabitSheet({ open, onClose }: { open: boolean; onClose: () =>
                 className="mb-1.5 text-xs font-medium"
                 style={{ color: "var(--color-text-muted)" }}
               >
-                Emoji
+                Emoji — type to use your keyboard&rsquo;s picker, or pick one below
               </div>
               <input
                 type="text"
                 value={customEmoji}
-                onChange={(e) => setCustomEmoji(e.target.value.slice(0, 2))}
+                onChange={(e) => setCustomEmoji(e.target.value.slice(0, 4))}
                 className="w-16 rounded-[var(--radius-sm)] border px-3 py-2 text-center text-xl outline-none"
                 style={{
                   borderColor: "var(--color-border)",
@@ -162,10 +214,82 @@ export function AddHabitSheet({ open, onClose }: { open: boolean; onClose: () =>
               />
             </div>
 
+            <div>
+              <div
+                className="mb-1.5 text-xs font-medium"
+                style={{ color: "var(--color-text-muted)" }}
+              >
+                Why are you adding this?
+              </div>
+              <textarea
+                value={why}
+                onChange={(e) => setWhy(e.target.value)}
+                placeholder="e.g. I want to start running so I want to hydrate more"
+                rows={2}
+                className="w-full resize-none rounded-[var(--radius-sm)] border px-3 py-2 text-sm outline-none"
+                style={{
+                  borderColor: "var(--color-border)",
+                  background: "var(--color-surface)",
+                  color: "var(--color-text)",
+                }}
+              />
+            </div>
+
             <button
               type="button"
               onClick={addCustom}
-              disabled={!customLabel.trim()}
+              disabled={!customLabel.trim() || !why.trim() || atLimit}
+              className="rounded-[var(--radius-sm)] py-2.5 text-sm font-semibold disabled:opacity-50"
+              style={{ background: "var(--color-brand)", color: "var(--color-brand-contrast)" }}
+            >
+              Add habit
+            </button>
+          </div>
+        ) : selectedEntry ? (
+          <div className="flex flex-col gap-3 pb-2">
+            <button
+              type="button"
+              onClick={() => setSelectedEntry(null)}
+              className="self-start text-xs font-medium"
+              style={{ color: "var(--color-brand)" }}
+            >
+              &lsaquo; Back to list
+            </button>
+
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl leading-none" aria-hidden>
+                {CATEGORY_EMOJI[selectedEntry.category]}
+              </span>
+              <div className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>
+                {selectedEntry.label}
+              </div>
+            </div>
+
+            <div>
+              <div
+                className="mb-1.5 text-xs font-medium"
+                style={{ color: "var(--color-text-muted)" }}
+              >
+                Why are you adding this?
+              </div>
+              <textarea
+                value={why}
+                onChange={(e) => setWhy(e.target.value)}
+                placeholder="e.g. I'm low in potassium so I want to track electrolytes"
+                rows={2}
+                className="w-full resize-none rounded-[var(--radius-sm)] border px-3 py-2 text-sm outline-none"
+                style={{
+                  borderColor: "var(--color-border)",
+                  background: "var(--color-surface)",
+                  color: "var(--color-text)",
+                }}
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={confirmFromCatalog}
+              disabled={!why.trim() || atLimit}
               className="rounded-[var(--radius-sm)] py-2.5 text-sm font-semibold disabled:opacity-50"
               style={{ background: "var(--color-brand)", color: "var(--color-brand-contrast)" }}
             >
@@ -214,8 +338,8 @@ export function AddHabitSheet({ open, onClose }: { open: boolean; onClose: () =>
                     <button
                       key={entry.id}
                       type="button"
-                      disabled={added}
-                      onClick={() => addFromCatalog(entry.id, entry.label, entry.category)}
+                      disabled={added || atLimit}
+                      onClick={() => setSelectedEntry(entry)}
                       className="flex items-start gap-2.5 rounded-[var(--radius-md)] border px-3 py-2.5 text-left disabled:opacity-50"
                       style={{ borderColor: "var(--color-border)" }}
                     >
