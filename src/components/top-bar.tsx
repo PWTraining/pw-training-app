@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { MenuButton, MenuDrawer } from "./menu-drawer";
 import { Logo } from "./logo";
-import { WeatherPill } from "./weather-pill";
 
 export function TopBar() {
   const [open, setOpen] = useState(false);
@@ -18,10 +17,7 @@ export function TopBar() {
         }}
       >
         <MenuButton onClick={() => setOpen(true)} />
-        <div className="flex items-center gap-3">
-          <WeatherPill />
-          <Logo />
-        </div>
+        <Logo />
       </header>
 
       <MenuDrawer open={open} onClose={() => setOpen(false)} />

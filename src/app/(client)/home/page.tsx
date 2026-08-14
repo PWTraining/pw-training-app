@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { TopBar } from "@/components/top-bar";
+import { WeatherPill } from "@/components/weather-pill";
 import { DayCheckIn } from "@/components/day-checkin";
 import { ProgramAdherence } from "@/components/program-adherence";
 import { useHabits } from "@/lib/habits-context";
@@ -47,13 +48,16 @@ export default function HomePage() {
       <TopBar />
 
       <div className="flex flex-col gap-5 px-4 pt-4 pb-6">
-        <section>
-          <h1 className="text-xl font-bold" style={{ color: "var(--color-text)" }}>
-            Greetings, Paul
-          </h1>
-          <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
-            Nice to see you today.
-          </p>
+        <section className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-bold" style={{ color: "var(--color-text)" }}>
+              Greetings, Paul
+            </h1>
+            <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+              Nice to see you today.
+            </p>
+          </div>
+          <WeatherPill />
         </section>
 
         <ProgramAdherence
@@ -112,17 +116,12 @@ export default function HomePage() {
 
         {MOCK_COACH_COMMENT && (
           <section
-            className="relative flex gap-3 rounded-[var(--radius-lg)] border py-4 pl-5 pr-4"
+            className="flex gap-3 rounded-[var(--radius-lg)] border-2 p-4"
             style={{
-              borderColor: "var(--color-border)",
+              borderColor: "color-mix(in srgb, var(--color-brand-teal) 55%, var(--color-border))",
               background: "color-mix(in srgb, var(--color-brand-teal) 8%, var(--color-surface))",
             }}
           >
-            <span
-              className="absolute left-2.5 top-3 bottom-3 w-1 rounded-full"
-              style={{ background: "var(--color-brand-teal)" }}
-              aria-hidden
-            />
             <div>
               <h2
                 className="mb-1 flex items-center gap-1.5 text-base font-bold"

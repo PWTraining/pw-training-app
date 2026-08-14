@@ -1,8 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { CheckInRow } from "./checkin-row";
+import { HabitEditor } from "./habit-editor";
+import { AddHabitSheet } from "./add-habit-sheet";
 import { useHabits } from "@/lib/habits-context";
-import { TODAY_INDEX } from "@/lib/habits";
+import { TODAY_INDEX, MAX_ACTIVE_HABITS } from "@/lib/habits";
 
 export const MOOD_ENTRIES = [
   { id: "physical", emoji: "💪", label: "Body" },
@@ -14,7 +17,10 @@ export const MOOD_ENTRIES = [
 // Progress day view (any past day) so the two can't drift apart.
 export function DayCheckIn({ day = TODAY_INDEX }: { day?: number }) {
   const { habits, dayValue, setDayValue } = useHabits();
+  const [editing, setEditing] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
   const activeHabits = habits.filter((h) => !h.archived);
+  const atLimit = activeHabits.length >= MAX_ACTIVE_HABITS;
 
   return (
     <>
@@ -22,22 +28,49 @@ export function DayCheckIn({ day = TODAY_INDEX }: { day?: number }) {
         className="rounded-[var(--radius-lg)] border p-4"
         style={{ borderColor: "var(--color-border)" }}
       >
-        <h2 className="mb-1 text-sm font-bold" style={{ color: "var(--color-text)" }}>
-          Daily Check-In
-        </h2>
+        <div className="mb-1 flex items-center justify-between gap-2">
+          <h2 className="text-sm font-bold" style={{ color: "var(--color-text)" }}>
+            Daily Check-In
+          </h2>
+          <button
+            type="button"
+            onClick={() => setEditing((v) => !v)}
+            className="text-xs font-semibold"
+            style={{ color: "var(--color-brand)" }}
+          >
+            {editing ? "Done" : "Edit"}
+          </button>
+        </div>
 
-        {activeHabits.map((habit, i) => (
-          <CheckInRow
-            key={habit.id}
-            id={habit.id}
-            emoji={habit.emoji}
-            label={habit.label}
-            value={dayValue(habit.id, day)}
-            onChange={(v) => setDayValue(habit.id, day, v)}
-            isLast={i === activeHabits.length - 1}
-            day={day}
-          />
-        ))}
+        {editing ? (
+          <div className="mt-2 flex flex-col gap-2">
+            <HabitEditor habits={activeHabits} onDone={() => setEditing(false)} />
+            <button
+              type="button"
+              onClick={() => setAddOpen(true)}
+              disabled={atLimit}
+              className="rounded-[var(--radius-sm)] border py-2 text-sm font-medium disabled:opacity-50"
+              style={{ borderColor: "var(--color-border)", color: "var(--color-brand)" }}
+            >
+              {atLimit ? `Habit limit reached (${MAX_ACTIVE_HABITS})` : "+ Add habit"}
+            </button>
+          </div>
+        ) : (
+          activeHabits.map((habit, i) => (
+            <CheckInRow
+              key={habit.id}
+              id={habit.id}
+              emoji={habit.emoji}
+              label={habit.label}
+              value={dayValue(habit.id, day)}
+              onChange={(v) => setDayValue(habit.id, day, v)}
+              isLast={i === activeHabits.length - 1}
+              day={day}
+            />
+          ))
+        )}
+
+        <AddHabitSheet open={addOpen} onClose={() => setAddOpen(false)} />
       </section>
 
       <section

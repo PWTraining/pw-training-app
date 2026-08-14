@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PHASES } from "@/lib/portal-mocks";
 
-export default function PhasesIndexPage() {
+export default function RoadmapIndexPage() {
   return (
     <div>
       <header
@@ -12,15 +12,15 @@ export default function PhasesIndexPage() {
         }}
       >
         <Link
-          href="/portal"
-          aria-label="Back to portal"
+          href="/profile"
+          aria-label="Back to profile"
           className="flex h-9 w-9 items-center justify-center rounded-full text-xl"
           style={{ color: "var(--color-text)" }}
         >
           &lsaquo;
         </Link>
         <h1 className="text-lg font-semibold" style={{ color: "var(--color-text)" }}>
-          Phases
+          Roadmap
         </h1>
       </header>
 
@@ -28,7 +28,7 @@ export default function PhasesIndexPage() {
         {PHASES.map((phase) => (
           <Link
             key={phase.id}
-            href={`/portal/phases/${phase.id}`}
+            href={`/profile/roadmap/${phase.id}`}
             className="flex items-center justify-between rounded-[var(--radius-lg)] border p-4"
             style={{ borderColor: "var(--color-border)" }}
           >

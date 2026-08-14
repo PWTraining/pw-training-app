@@ -78,14 +78,19 @@ export function dateForDay(dayIndex: number) {
   return date;
 }
 
-export function formatDay(dayIndex: number) {
-  if (dayIndex === TODAY_INDEX) return "Today";
-  if (dayIndex === TODAY_INDEX - 1) return "Yesterday";
-  return dateForDay(dayIndex).toLocaleDateString(undefined, {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  });
+function ordinal(day: number) {
+  if (day > 3 && day < 21) return "th";
+  return ["th", "st", "nd", "rd"][day % 10] ?? "th";
+}
+
+// "Thursday 13th of August" — the day view's title, spelled out in full
+// rather than as a relative label like "Yesterday".
+export function fullDate(dayIndex: number) {
+  const date = dateForDay(dayIndex);
+  const weekday = date.toLocaleDateString(undefined, { weekday: "long" });
+  const month = date.toLocaleDateString(undefined, { month: "long" });
+  const day = date.getDate();
+  return `${weekday} ${day}${ordinal(day)} of ${month}`;
 }
 
 // Mock comments a client has left against specific days of a habit's block —

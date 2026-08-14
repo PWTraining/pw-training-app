@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { AdherenceRing } from "@/components/adherence-ring";
 import { HabitGrid } from "@/components/habit-grid";
+import { HabitEditor } from "@/components/habit-editor";
 import { useHabits } from "@/lib/habits-context";
 import {
   BLOCK_LENGTH,
@@ -24,6 +25,7 @@ export function HabitDetail({ habitId }: { habitId: string }) {
   const today = todayValue(habitId);
   const comments = commentsFor(habitId);
   const [draft, setDraft] = useState("");
+  const [editing, setEditing] = useState(false);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const selectedDayComments = comments.filter((c) => c.day === selectedDay);
 
@@ -82,10 +84,24 @@ export function HabitDetail({ habitId }: { habitId: string }) {
         <span className="text-xl leading-none" aria-hidden>
           {habit.emoji}
         </span>
-        <h1 className="text-lg font-semibold" style={{ color: "var(--color-text)" }}>
+        <h1 className="flex-1 text-lg font-semibold" style={{ color: "var(--color-text)" }}>
           {habit.label}
         </h1>
+        <button
+          type="button"
+          onClick={() => setEditing((v) => !v)}
+          className="shrink-0 rounded-full px-2 py-1 text-xs font-semibold"
+          style={{ color: "var(--color-brand)" }}
+        >
+          {editing ? "Done" : "Edit"}
+        </button>
       </header>
+
+      {editing && (
+        <div className="px-4 pt-4">
+          <HabitEditor habits={[habit]} onDone={() => setEditing(false)} />
+        </div>
+      )}
 
       <div className="flex flex-col gap-5 px-4 pt-4 pb-6">
         {habit.why && (

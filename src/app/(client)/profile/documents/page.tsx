@@ -12,8 +12,8 @@ export default function DocumentsIndexPage() {
         }}
       >
         <Link
-          href="/portal"
-          aria-label="Back to portal"
+          href="/profile"
+          aria-label="Back to profile"
           className="flex h-9 w-9 items-center justify-center rounded-full text-xl"
           style={{ color: "var(--color-text)" }}
         >
@@ -28,7 +28,7 @@ export default function DocumentsIndexPage() {
         {DOCUMENTS.map((doc) => (
           <Link
             key={doc.id}
-            href={`/portal/documents/${doc.id}`}
+            href={`/profile/documents/${doc.id}`}
             className="flex items-center gap-3 rounded-[var(--radius-lg)] border p-4"
             style={{ borderColor: "var(--color-border)" }}
           >

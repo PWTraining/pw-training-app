@@ -4,45 +4,54 @@ import { useEffect, useState } from "react";
 import { FALLBACK_LOCATION } from "@/lib/weather-location";
 
 const WEATHER_CODES: Record<number, { emoji: string; label: string }> = {
-  0: { emoji: "☀️", label: "Sunny" },
-  1: { emoji: "🌤️", label: "Mostly sunny" },
-  2: { emoji: "⛅", label: "Sunny with a bit of cloud" },
-  3: { emoji: "☁️", label: "Overcast" },
-  45: { emoji: "🌫️", label: "Foggy" },
-  48: { emoji: "🌫️", label: "Foggy" },
-  51: { emoji: "🌦️", label: "Light drizzle" },
-  53: { emoji: "🌦️", label: "Drizzle" },
-  55: { emoji: "🌦️", label: "Heavy drizzle" },
-  61: { emoji: "🌧️", label: "Light rain" },
-  63: { emoji: "🌧️", label: "Rain" },
-  65: { emoji: "🌧️", label: "Heavy rain" },
-  71: { emoji: "🌨️", label: "Light snow" },
-  73: { emoji: "🌨️", label: "Snow" },
-  75: { emoji: "❄️", label: "Heavy snow" },
-  80: { emoji: "🌦️", label: "Showers" },
-  81: { emoji: "🌦️", label: "Showers" },
-  82: { emoji: "⛈️", label: "Heavy showers" },
-  95: { emoji: "⛈️", label: "Thunderstorms" },
-  96: { emoji: "⛈️", label: "Thunderstorms" },
-  99: { emoji: "⛈️", label: "Thunderstorms" },
+  0: { emoji: "☀️", label: "clear" },
+  1: { emoji: "🌤️", label: "mostly sunny" },
+  2: { emoji: "⛅", label: "partly cloudy" },
+  3: { emoji: "☁️", label: "overcast" },
+  45: { emoji: "🌫️", label: "foggy" },
+  48: { emoji: "🌫️", label: "foggy" },
+  51: { emoji: "🌦️", label: "light drizzle" },
+  53: { emoji: "🌦️", label: "drizzle" },
+  55: { emoji: "🌦️", label: "heavy drizzle" },
+  61: { emoji: "🌧️", label: "light rain" },
+  63: { emoji: "🌧️", label: "rain" },
+  65: { emoji: "🌧️", label: "heavy rain" },
+  71: { emoji: "🌨️", label: "light snow" },
+  73: { emoji: "🌨️", label: "snow" },
+  75: { emoji: "❄️", label: "heavy snow" },
+  80: { emoji: "🌦️", label: "showers" },
+  81: { emoji: "🌦️", label: "showers" },
+  82: { emoji: "⛈️", label: "heavy showers" },
+  95: { emoji: "⛈️", label: "thunderstorms" },
+  96: { emoji: "⛈️", label: "thunderstorms" },
+  99: { emoji: "⛈️", label: "thunderstorms" },
 };
 
 function describeWeather(code: number) {
-  return WEATHER_CODES[code] ?? { emoji: "🌡️", label: "Current conditions" };
+  return WEATHER_CODES[code] ?? { emoji: "🌡️", label: "current conditions" };
 }
 
-type Weather = { tempC: number; emoji: string; label: string };
+type Weather = { tempC: number; emoji: string; label: string; place: string };
 
-// Open-Meteo is keyless, so this runs straight from the browser with no
-// server route or API key to manage.
+// Open-Meteo for conditions and BigDataCloud for the place name — both are
+// keyless, so this runs straight from the browser with nothing to manage.
 async function fetchWeather(latitude: number, longitude: number): Promise<Weather> {
-  const res = await fetch(
-    `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&timezone=auto`,
-  );
-  const data = await res.json();
+  const [weatherRes, placeRes] = await Promise.all([
+    fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&timezone=auto`,
+    ),
+    fetch(
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`,
+    ),
+  ]);
+
+  const weather = await weatherRes.json();
+  const place = await placeRes.json();
+
   return {
-    tempC: Math.round(data.current.temperature_2m),
-    ...describeWeather(data.current.weather_code),
+    tempC: Math.round(weather.current.temperature_2m),
+    ...describeWeather(weather.current.weather_code),
+    place: place.city || place.locality || place.principalSubdivision || "Your area",
   };
 }
 
@@ -62,6 +71,7 @@ function currentCoords(): Promise<{ latitude: number; longitude: number }> {
 
 export function WeatherPill() {
   const [weather, setWeather] = useState<Weather | null>(null);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -78,19 +88,41 @@ export function WeatherPill() {
     };
   }, []);
 
-  // Nothing rendered until it resolves — a placeholder pill in the header
-  // reads as a broken control more than an empty gap does.
   if (!weather) return null;
 
   return (
-    <span
-      className="flex items-center gap-1 text-sm font-medium tabular-nums"
-      style={{ color: "var(--color-text)" }}
-      title={weather.label}
-    >
-      <span aria-hidden>{weather.emoji}</span>
-      {weather.tempC}&deg;
-      <span className="sr-only">, {weather.label}</span>
-    </span>
+    <div className="relative shrink-0">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex h-9 items-center gap-1.5 rounded-full border px-3 text-sm font-medium tabular-nums"
+        style={{
+          borderColor: "var(--color-border)",
+          background: "var(--color-surface)",
+          color: "var(--color-text)",
+        }}
+      >
+        <span aria-hidden>{weather.emoji}</span>
+        {weather.tempC}&deg;
+        <span className="text-[9px]" style={{ color: "var(--color-text-muted)" }} aria-hidden>
+          {open ? "▲" : "▼"}
+        </span>
+      </button>
+
+      {open && (
+        <div
+          className="absolute right-0 top-11 z-20 w-max max-w-[15rem] rounded-[var(--radius-md)] border px-3 py-2 text-xs"
+          style={{
+            borderColor: "var(--color-border)",
+            background: "var(--color-surface-raised)",
+            color: "var(--color-text)",
+            boxShadow: "0 6px 20px rgba(0,0,0,0.10)",
+          }}
+        >
+          {weather.place}, {weather.label}
+        </div>
+      )}
+    </div>
   );
 }

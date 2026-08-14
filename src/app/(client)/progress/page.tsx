@@ -6,7 +6,7 @@ import { TopBar } from "@/components/top-bar";
 import { HabitGrid } from "@/components/habit-grid";
 import { AddHabitSheet } from "@/components/add-habit-sheet";
 import { ProgramAdherence } from "@/components/program-adherence";
-import { BlockCalendar } from "@/components/block-calendar";
+import { MonthCalendar } from "@/components/month-calendar";
 import { MOOD_ENTRIES } from "@/components/day-checkin";
 import { SectionDivider } from "@/components/section-divider";
 import {
@@ -79,7 +79,7 @@ export default function ProgressPage() {
           labels={LIST_TIMEFRAME_LABELS}
         />
 
-        <BlockCalendar />
+        <MonthCalendar timeframe={timeframe} />
 
         <SectionDivider label="Habit Tracker" />
 
@@ -173,7 +173,7 @@ export default function ProgressPage() {
 
         <SectionDivider label="Training" />
 
-        <TrainingAdherenceCard cardioPct={todayValue("cardio")} />
+        <TrainingAdherenceCard />
 
         <SectionDivider label="Reviews & Calls" />
 

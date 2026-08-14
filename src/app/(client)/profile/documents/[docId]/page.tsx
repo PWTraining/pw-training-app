@@ -22,7 +22,7 @@ export default async function DocumentDetailPage({
         }}
       >
         <Link
-          href="/portal/documents"
+          href="/profile/documents"
           aria-label="Back to documents"
           className="flex h-9 w-9 items-center justify-center rounded-full text-xl"
           style={{ color: "var(--color-text)" }}

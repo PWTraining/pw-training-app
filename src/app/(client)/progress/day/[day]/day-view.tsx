@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DayCheckIn } from "@/components/day-checkin";
-import { BLOCK_LENGTH, TODAY_INDEX, formatDay, dateForDay } from "@/lib/habits";
+import { TODAY_INDEX, fullDate } from "@/lib/habits";
 
 export function DayView({ day }: { day: number }) {
   const router = useRouter();
@@ -37,11 +37,10 @@ export function DayView({ day }: { day: number }) {
       >
         <Link
           href="/progress"
-          aria-label="Back to progress"
-          className="flex h-9 w-9 items-center justify-center rounded-full text-xl"
-          style={{ color: "var(--color-text)" }}
+          className="shrink-0 rounded-full px-2 py-1 text-xs font-semibold"
+          style={{ color: "var(--color-brand)" }}
         >
-          &lsaquo;
+          &lsaquo; Back
         </Link>
 
         <div className="flex-1 text-center">
@@ -52,59 +51,36 @@ export function DayView({ day }: { day: number }) {
             style={{ color: "var(--color-text)" }}
             suppressHydrationWarning
           >
-            {formatDay(day)}
+            {fullDate(day)}
           </div>
           <div className="text-[11px]" style={{ color: "var(--color-text-muted)" }}>
-            Day {day + 1} of {BLOCK_LENGTH}
+            {day === TODAY_INDEX ? "Today's check-in" : "Check-in"}
           </div>
         </div>
 
-        <div className="flex gap-1">
+        <div className="flex shrink-0 gap-1">
           <button
             type="button"
             disabled={!hasPrev}
             onClick={() => router.push(`/progress/day/${day - 1}`)}
-            aria-label="Previous day"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-xl disabled:opacity-30"
-            style={{ color: "var(--color-text)" }}
+            className="rounded-full px-2 py-1 text-xs font-semibold disabled:opacity-30"
+            style={{ color: "var(--color-brand)" }}
           >
-            &lsaquo;
+            Previous
           </button>
           <button
             type="button"
             disabled={!hasNext}
             onClick={() => router.push(`/progress/day/${day + 1}`)}
-            aria-label="Next day"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-xl disabled:opacity-30"
-            style={{ color: "var(--color-text)" }}
+            className="rounded-full px-2 py-1 text-xs font-semibold disabled:opacity-30"
+            style={{ color: "var(--color-brand)" }}
           >
-            &rsaquo;
+            Next
           </button>
         </div>
       </header>
 
       <div className="flex flex-col gap-5 px-4 pt-4 pb-6">
-        {day < TODAY_INDEX && (
-          <p
-            className="rounded-[var(--radius-md)] border px-3 py-2 text-xs"
-            style={{
-              borderColor: "color-mix(in srgb, var(--color-brand) 30%, var(--color-border))",
-              background: "color-mix(in srgb, var(--color-brand) 6%, var(--color-surface))",
-              color: "var(--color-text-muted)",
-            }}
-          >
-            Filling in{" "}
-            <b style={{ color: "var(--color-text)" }} suppressHydrationWarning>
-              {dateForDay(day).toLocaleDateString(undefined, {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-              })}
-            </b>
-            .
-          </p>
-        )}
-
         <DayCheckIn day={day} />
       </div>
     </div>

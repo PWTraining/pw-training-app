@@ -22,7 +22,7 @@ export default async function PhaseDetailPage({
         }}
       >
         <Link
-          href="/portal/phases"
+          href="/profile/roadmap"
           aria-label="Back to phases"
           className="flex h-9 w-9 items-center justify-center rounded-full text-xl"
           style={{ color: "var(--color-text)" }}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { adherenceColor, sliderFill } from "@/lib/habits";
+import { adherenceColor, sliderFill, TODAY_INDEX } from "@/lib/habits";
 import { useHabits } from "@/lib/habits-context";
 
 export function CheckInRow({
@@ -29,6 +29,9 @@ export function CheckInRow({
 
   const fill = adherenceColor(value);
   const comments = commentsFor(id);
+  // Only the notes filed against the day being viewed, shown under the row
+  // so a past day reads as a snapshot without opening anything.
+  const dayComments = comments.filter((c) => c.day === (day ?? TODAY_INDEX));
 
   function submit() {
     const text = draft.trim();
@@ -92,6 +95,23 @@ export function CheckInRow({
           </span>
         ))}
       </div>
+
+      {dayComments.length > 0 && (
+        <ul className="mt-2 flex flex-col gap-1">
+          {dayComments.map((comment, i) => (
+            <li
+              key={i}
+              className="rounded-[var(--radius-sm)] px-2.5 py-1.5 text-xs"
+              style={{
+                background: "color-mix(in srgb, var(--color-brand) 6%, var(--color-surface))",
+                color: "var(--color-text)",
+              }}
+            >
+              {comment.text}
+            </li>
+          ))}
+        </ul>
+      )}
 
       {showComment && (
         <div className="mt-2 flex gap-2">

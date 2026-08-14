@@ -32,6 +32,20 @@ export const PHASES: Phase[] = [
   },
 ];
 
+// Headline profile details — the "who am I and where am I up to" block at
+// the top of the Profile tab. Placeholder until real accounts exist.
+export const MOCK_PROFILE = {
+  name: "Paul Wintle",
+  tagline: "1:1 Coaching",
+  startDate: "5 August 2026",
+  stats: [
+    { label: "Height", value: "183cm" },
+    { label: "Weight", value: "88.0kg" },
+    { label: "Goal", value: "Lean 84kg" },
+    { label: "Block", value: "1 of 4" },
+  ],
+};
+
 export const MOCK_METRICS = [
   { label: "Bench 1RM", value: "100kg" },
   { label: "5km", value: "24:10" },

@@ -35,7 +35,8 @@ const TRAIN_TIMEFRAME_LABELS: Record<Timeframe, string> = {
   Yearly: "Year",
 };
 
-export function TrainingAdherenceCard({ cardioPct }: { cardioPct: number }) {
+// One combined number covering gym, stretching, cardio and anything else.
+export function TrainingAdherenceCard() {
   const [timeframe, setTimeframe] = useState<Timeframe>("Weekly");
   const { completed, planned } = MOCK_TRAINING_SESSIONS_BY_PERIOD[timeframe];
   const pct = planned > 0 ? Math.round((completed / planned) * 100) : 0;
@@ -77,17 +78,6 @@ export function TrainingAdherenceCard({ cardioPct }: { cardioPct: number }) {
             {completed} of {planned} sessions completed {PERIOD_NOUN[timeframe]}
           </div>
         </div>
-      </div>
-      <div
-        className="mt-3 flex items-center justify-between border-t pt-3"
-        style={{ borderColor: "var(--color-border)" }}
-      >
-        <span className="text-xs font-medium" style={{ color: "var(--color-text-muted)" }}>
-          Cardio
-        </span>
-        <span className="text-sm font-semibold tabular-nums" style={{ color: "var(--color-text)" }}>
-          {cardioPct}%
-        </span>
       </div>
     </section>
   );
