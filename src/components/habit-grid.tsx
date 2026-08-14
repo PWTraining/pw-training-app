@@ -18,7 +18,7 @@ import {
 // dense heatmap vs Week's single row); each circle is then capped to
 // whichever is smaller, its row height or its column width, so it never
 // overflows or distorts, using CSS `min(100%, Npx)` + aspect-ratio.
-const CONTAINER_HEIGHT = 96; // px
+const CONTAINER_HEIGHT = 76; // px
 
 function cellMetrics(rows: number) {
   const gap = rows <= 1 ? 0 : rows <= 4 ? 4 : 2;

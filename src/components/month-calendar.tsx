@@ -52,10 +52,10 @@ export function MonthCalendar({ timeframe }: { timeframe: Timeframe }) {
 
   return (
     <section
-      className="rounded-[var(--radius-lg)] border p-4"
+      className="rounded-[var(--radius-lg)] border p-3"
       style={{ borderColor: "var(--color-border)" }}
     >
-      <div className="mb-3 flex items-center justify-between gap-2">
+      <div className="mb-2 flex items-center justify-between gap-2">
         <button
           type="button"
           onClick={() => setMonthOffset((v) => v - 1)}

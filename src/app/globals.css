@@ -9,15 +9,30 @@ body {
 
 /* Styled range slider, used across habit/check-in logging. Track fill
    colour is set inline per-instance via --slider-fill. */
+/*
+  The visible track is deliberately thin, but a 10px-tall input is a 10px
+  touch target — a finger landing just above or below it hits nothing, which
+  reads as "only the dot works". So the input itself is finger-sized and
+  transparent, the thin track is drawn by the track pseudo-element, and the
+  negative margin stops that height pushing the rows apart. Tapping anywhere
+  along the row now jumps the value, which is native range behaviour.
+*/
 input[type="range"].slider {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
+  height: 34px;
+  margin-block: -8px;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"].slider::-webkit-slider-runnable-track {
   height: 10px;
   border-radius: 999px;
   background: var(--slider-fill, var(--color-border));
   background-repeat: no-repeat;
-  outline: none;
 }
 
 input[type="range"].slider::-webkit-slider-thumb {
@@ -25,11 +40,20 @@ input[type="range"].slider::-webkit-slider-thumb {
   appearance: none;
   width: 22px;
   height: 22px;
+  /* (track 10px - thumb 22px) / 2, so it rides centred on the track */
+  margin-top: -6px;
   border-radius: 999px;
   background: var(--color-surface);
   border: 3px solid var(--color-brand);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   cursor: pointer;
+}
+
+input[type="range"].slider::-moz-range-track {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--slider-fill, var(--color-border));
+  background-repeat: no-repeat;
 }
 
 input[type="range"].slider::-moz-range-thumb {
@@ -40,11 +64,8 @@ input[type="range"].slider::-moz-range-thumb {
   border: 3px solid var(--color-brand);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   cursor: pointer;
-  border: none;
 }
 
-input[type="range"].slider::-moz-range-track {
-  height: 10px;
-  border-radius: 999px;
-  background: transparent;
+input[type="range"].slider:disabled {
+  cursor: default;
 }

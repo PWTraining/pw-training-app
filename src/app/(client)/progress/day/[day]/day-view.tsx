@@ -36,8 +36,10 @@ export function DayView({ day }: { day: number }) {
     <div>
       <TopBar />
 
+      {/* Previous/Next get full-height targets — this row is thumbed a lot
+          while flicking back through days. */}
       <div
-        className="flex items-center gap-2 border-b px-4 py-2"
+        className="flex items-center gap-2 border-b px-3 py-1"
         style={{ borderColor: "var(--color-border)" }}
       >
         {/* Dates resolve in the viewer's timezone, which the server doesn't
@@ -54,7 +56,7 @@ export function DayView({ day }: { day: number }) {
           <button
             type="button"
             onClick={() => router.push(`/progress/day/${day - 1}`)}
-            className="rounded-full px-1.5 py-1 text-xs font-semibold"
+            className="flex h-11 items-center rounded-full px-3 text-sm font-semibold"
             style={{ color: "var(--color-brand)" }}
           >
             Previous
@@ -63,7 +65,7 @@ export function DayView({ day }: { day: number }) {
             type="button"
             disabled={!hasNext}
             onClick={() => router.push(`/progress/day/${day + 1}`)}
-            className="rounded-full px-1.5 py-1 text-xs font-semibold disabled:opacity-30"
+            className="flex h-11 items-center rounded-full px-3 text-sm font-semibold disabled:opacity-30"
             style={{ color: "var(--color-brand)" }}
           >
             Next

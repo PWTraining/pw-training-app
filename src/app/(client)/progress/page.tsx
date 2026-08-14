@@ -9,11 +9,7 @@ import { ProgramAdherence } from "@/components/program-adherence";
 import { MonthCalendar } from "@/components/month-calendar";
 import { MOOD_ENTRIES } from "@/components/day-checkin";
 import { SectionDivider } from "@/components/section-divider";
-import {
-  TrainingAdherenceCard,
-  WeeklyReviewsCard,
-  CheckInCallsCard,
-} from "@/components/progress-sections";
+import { WeeklyReviewsCard, CheckInCallsCard } from "@/components/progress-sections";
 import { useHabits } from "@/lib/habits-context";
 import {
   adherenceColor,
@@ -69,7 +65,7 @@ export default function ProgressPage() {
     <div>
       <TopBar />
 
-      <div className="flex flex-col gap-5 px-4 pt-4 pb-6">
+      <div className="flex flex-col gap-4 px-4 pt-4 pb-6">
         <ProgramAdherence
           values={adherenceValues}
           timeframe={timeframe}
@@ -82,7 +78,7 @@ export default function ProgressPage() {
 
         <SectionDivider label="Habit Tracker" />
 
-        <section className="flex flex-col gap-3">
+        <section className="flex flex-col gap-2">
           {activeHabits.map((habit) => {
             const habitPct = Math.round(periodPct(habit.id, timeframe, todayValue(habit.id)));
 
@@ -90,10 +86,10 @@ export default function ProgressPage() {
               <Link
                 key={habit.id}
                 href={`/progress/${habit.id}`}
-                className="block rounded-[var(--radius-md)] border px-3 py-3"
+                className="block rounded-[var(--radius-md)] border px-3 py-2"
                 style={{ borderColor: "var(--color-border)", background: "var(--color-surface)" }}
               >
-                <div className="mb-2 flex items-center gap-2.5">
+                <div className="mb-1.5 flex items-center gap-2.5">
                   <span className="text-2xl leading-none" aria-hidden>
                     {habit.emoji}
                   </span>
@@ -134,20 +130,20 @@ export default function ProgressPage() {
           How you&rsquo;re feeling, not a task to tick off — logged on Home.
         </p>
 
-        <section className="flex flex-col gap-3">
+        <section className="flex flex-col gap-2">
           {MOOD_ENTRIES.map((mood) => {
             const moodPct = Math.round(periodPct(mood.id, timeframe, todayValue(mood.id)));
 
             return (
               <div
                 key={mood.id}
-                className="rounded-[var(--radius-md)] border px-3 py-3"
+                className="rounded-[var(--radius-md)] border px-3 py-2"
                 style={{
                   borderColor: "color-mix(in srgb, var(--habit-color-5) 30%, var(--color-border))",
                   background: "color-mix(in srgb, var(--habit-color-5) 5%, var(--color-surface))",
                 }}
               >
-                <div className="mb-2 flex items-center gap-2.5">
+                <div className="mb-1.5 flex items-center gap-2.5">
                   <span className="text-2xl leading-none" aria-hidden>
                     {mood.emoji}
                   </span>
@@ -172,7 +168,21 @@ export default function ProgressPage() {
 
         <SectionDivider label="Training" />
 
-        <TrainingAdherenceCard />
+        <Link
+          href="/progress/training"
+          className="flex items-center gap-3 rounded-[var(--radius-md)] border px-3 py-2.5"
+          style={{ borderColor: "var(--color-border)", background: "var(--color-surface)" }}
+        >
+          <span className="text-xl leading-none" aria-hidden>
+            🏋
+          </span>
+          <span className="flex-1 text-sm font-medium" style={{ color: "var(--color-text)" }}>
+            Training Adherence
+          </span>
+          <span className="text-xs font-medium" style={{ color: "var(--color-brand)" }}>
+            View &rsaquo;
+          </span>
+        </Link>
 
         <SectionDivider label="Reviews & Calls" />
 

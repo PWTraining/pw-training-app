@@ -43,10 +43,10 @@ export function TrainingAdherenceCard() {
 
   return (
     <section
-      className="rounded-[var(--radius-lg)] border p-4"
+      className="rounded-[var(--radius-lg)] border p-3"
       style={{ borderColor: "var(--color-border)" }}
     >
-      <div className="mb-3 flex items-center justify-between gap-2">
+      <div className="mb-2 flex items-center justify-between gap-2">
         <h2 className="text-base font-bold" style={{ color: "var(--color-text)" }}>
           Training Adherence
         </h2>
@@ -86,10 +86,10 @@ export function TrainingAdherenceCard() {
 export function WeeklyReviewsCard() {
   return (
     <section
-      className="rounded-[var(--radius-lg)] border p-4"
+      className="rounded-[var(--radius-lg)] border p-3"
       style={{ borderColor: "var(--color-border)" }}
     >
-      <h2 className="mb-3 text-sm font-semibold" style={{ color: "var(--color-text)" }}>
+      <h2 className="mb-2 text-sm font-semibold" style={{ color: "var(--color-text)" }}>
         Weekly Reviews
       </h2>
       <div className="flex flex-col gap-2">
@@ -119,7 +119,7 @@ export function CheckInCallsCard() {
 
   return (
     <section
-      className="rounded-[var(--radius-lg)] border p-4"
+      className="rounded-[var(--radius-lg)] border p-3"
       style={{ borderColor: "var(--color-border)" }}
     >
       <div className="mb-3 flex items-center justify-between">
