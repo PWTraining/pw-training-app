@@ -158,10 +158,15 @@ export function PhotoCropper({
         {/* The window itself: everything outside it is dimmed by the ring
             shadow, so what you keep is obvious without masking the image. */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
+          {/* Height first, width derived from it, then clamped if the screen
+              is narrower. Aspect ratio alone gives an auto-width flex item
+              nothing to work from and the box collapses. */}
           <div
             ref={frame}
-            className="aspect-[3/4] max-h-full"
             style={{
+              height: "100%",
+              maxWidth: "100%",
+              aspectRatio: "3 / 4",
               boxShadow: "0 0 0 9999px rgba(0,0,0,0.55)",
               outline: "2px solid rgba(255,255,255,0.9)",
             }}
