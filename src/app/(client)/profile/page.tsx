@@ -33,10 +33,13 @@ export default function ProfilePage() {
               span for an <Image> and the green ring stays exactly as it is. */}
           <div
             className="flex h-24 w-24 items-center justify-center rounded-full text-2xl font-bold"
+            /* Close-friends ring: fluoro green with a soft bloom outside it,
+               so opening the profile feels like being let into something. */
             style={{
               background: "color-mix(in srgb, var(--color-brand) 10%, var(--color-surface))",
               color: "var(--color-brand)",
-              boxShadow: "0 0 0 3px var(--color-surface), 0 0 0 6px #45d268",
+              boxShadow:
+                "0 0 0 3px var(--color-surface), 0 0 0 7px #39ff6a, 0 0 14px 4px rgba(57,255,106,0.55)",
             }}
             aria-hidden
           >

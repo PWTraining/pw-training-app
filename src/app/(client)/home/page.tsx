@@ -49,6 +49,28 @@ export default function HomePage() {
     };
   }, [habits, todayValue, trainingToday]);
 
+  // The three things the score is actually made of, so the number has an
+  // explanation sitting next to it instead of standing on its own.
+  const adherenceParts = useMemo(() => {
+    const active = habits.filter((h) => !h.archived);
+    const avg = (ids: string[], period: Timeframe) =>
+      ids.length === 0
+        ? 0
+        : Math.round(
+            ids.reduce(
+              (sum, id) =>
+                sum + (period === "Daily" ? todayValue(id) : weeklyPct(id, todayValue(id))),
+              0,
+            ) / ids.length,
+          );
+
+    return [
+      { label: "Habits", pct: avg(active.map((h) => h.id), timeframe) },
+      { label: "Mind Body Spirit", pct: avg(MOOD_ENTRIES.map((m) => m.id), timeframe) },
+      { label: "Training", pct: timeframe === "Daily" ? trainingToday : MOCK_TRAINING_PCT },
+    ];
+  }, [habits, todayValue, timeframe, trainingToday]);
+
 
   return (
     <div>
@@ -57,10 +79,10 @@ export default function HomePage() {
       <div className="flex flex-col gap-5 px-4 pt-4 pb-6">
         <WeatherHeader>
           <div>
-            <h1 className="text-xl font-bold" style={{ color: "var(--color-text)" }}>
+            <h1 className="text-2xl font-extrabold" style={{ color: "var(--color-text)" }}>
               Greetings, Paul
             </h1>
-            <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+            <p className="text-base font-medium" style={{ color: "var(--color-text-muted)" }}>
               Nice to see you today.
             </p>
           </div>
@@ -77,6 +99,7 @@ export default function HomePage() {
           onTimeframeChange={setTimeframe}
           timeframes={HOME_TIMEFRAMES}
           labels={HOME_TIMEFRAME_LABELS}
+          parts={adherenceParts}
         />
 
         {/* Always here, rest day included, and always the same tap through to

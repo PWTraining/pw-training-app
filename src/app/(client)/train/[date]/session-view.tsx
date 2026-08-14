@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { TopBar } from "@/components/top-bar";
+import { NoteField } from "@/components/note-field";
 import { exercisesForDate, useTrainLog } from "@/lib/train-log";
 import { dateFromKey, longDateLabel, programDayFor } from "@/lib/train-schedule";
 
 export function SessionView({ dateKey }: { dateKey: string }) {
   const date = useMemo(() => dateFromKey(dateKey), [dateKey]);
   const exercises = useMemo(() => (date ? exercisesForDate(date) : []), [date]);
-  const { hydrated, sessionFor, updateSet, setSaved } = useTrainLog();
+  const { hydrated, sessionFor, updateSet, setSaved, setNote, setSessionNote } = useTrainLog();
 
   if (!date) {
     return (
@@ -204,24 +205,54 @@ export function SessionView({ dateKey }: { dateKey: string }) {
                   ))}
                 </div>
 
-                {/* Quiet on purpose: it's an occasional extra, not the thing
-                    you came to this card to do. */}
-                <button
-                  type="button"
-                  className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-[var(--radius-md)] border py-2 text-xs font-medium"
-                  style={{
-                    borderColor: "var(--color-border)",
-                    color: "var(--color-text-muted)",
-                  }}
-                >
-                  <span className="text-sm leading-none" aria-hidden>
-                    📷
-                  </span>
-                  Upload Video
-                </button>
+                {/* Video upload shrinks to a chip on the left, with the
+                    comment bubble on the right, so neither dominates the
+                    bottom of the card. */}
+                <div className="mt-2 flex justify-start">
+                  <button
+                    type="button"
+                    className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium"
+                    style={{
+                      borderColor: "var(--color-border)",
+                      color: "var(--color-text-muted)",
+                    }}
+                  >
+                    <span className="text-sm leading-none" aria-hidden>
+                      📷
+                    </span>
+                    Video
+                  </button>
+                </div>
+
+                <NoteField
+                  value={log.notes?.[exercise.id] ?? ""}
+                  onSave={(text) => setNote(dateKey, exercises, exercise.id, text)}
+                  label={exercise.name}
+                  readOnly={log.saved}
+                />
               </div>
             );
           })}
+
+          {/* One note for the whole session, after the last exercise. */}
+          <section
+            className="rounded-[var(--radius-lg)] border-2 p-4"
+            style={{
+              borderColor: "color-mix(in srgb, var(--color-brand) 40%, var(--color-border))",
+              background: "color-mix(in srgb, var(--color-brand) 4%, var(--color-surface))",
+            }}
+          >
+            <h2 className="text-sm font-bold" style={{ color: "var(--color-text)" }}>
+              How was the session?
+            </h2>
+            <NoteField
+              value={log.sessionNote ?? ""}
+              onSave={(text) => setSessionNote(dateKey, exercises, text)}
+              label="this session"
+              readOnly={log.saved}
+              placeholder="Energy, aches, anything worth flagging"
+            />
+          </section>
 
           {!log.saved && (
             <button

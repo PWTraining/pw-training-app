@@ -49,11 +49,13 @@
   --adherence-30: #e8701f;
   --adherence-40: #f0932b;
   --adherence-50: #f2b632;
-  --adherence-60: #e8d13a;
-  --adherence-70: #c7d439;
-  --adherence-80: #9ccb3c;
-  --adherence-90: #6dbf45;
-  --adherence-100: #2f9e4f;
+  /* Green arrives early and hard: 80 and up should read as "you're at the
+     top end" from across the room, not as another shade of lime. */
+  --adherence-60: #e3cc36;
+  --adherence-70: #a9cd3a;
+  --adherence-80: #4cc44e;
+  --adherence-90: #17bf52;
+  --adherence-100: #00c853;
 
   /* Program Adherence donut only, a lighter and more vibrant green than the
      grid's --adherence-90/100 above (grid colours are unchanged). */

@@ -154,17 +154,18 @@ export function CheckInRow({
         {[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((tick) => (
           <span
             key={tick}
-            className="text-[8px] tabular-nums"
+            className="text-[10px] font-medium tabular-nums"
             style={{ color: "var(--color-text-muted)" }}
           >
-            {tick}%
+            {tick}
           </span>
         ))}
       </div>
 
-      {/* Both drawn rather than typed. The old glyphs were thin outlines at
-          text size and read as decoration rather than buttons. */}
       <div className="flex items-center justify-between">
+        {/* Drawn, so it can be sized properly, but at a lighter weight than
+            the first attempt. The comment bubble stays the emoji used
+            everywhere else in the app. */}
         {why ? (
           <button
             type="button"
@@ -174,18 +175,18 @@ export function CheckInRow({
             style={{ color: "var(--color-text-muted)" }}
           >
             <svg
-              width="24"
-              height="24"
+              width="23"
+              height="23"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2.2"
+              strokeWidth="1.6"
               strokeLinecap="round"
               aria-hidden
             >
               <circle cx="12" cy="12" r="9.25" />
               <path d="M12 11.2v5.4" />
-              <path d="M12 7.5v.2" strokeWidth="2.9" />
+              <path d="M12 7.6v.2" strokeWidth="2.2" />
             </svg>
           </button>
         ) : (
@@ -198,21 +199,10 @@ export function CheckInRow({
           type="button"
           onClick={() => (open ? setOpen(false) : startEditing())}
           aria-label={saved ? `Edit your comment on ${label}` : `Leave a comment on ${label}`}
-          className="-mr-1.5 flex h-11 w-11 items-center justify-center rounded-full"
-          style={{ color: saved ? "var(--color-brand)" : "var(--color-text-muted)" }}
+          className="-mr-1.5 flex h-11 w-11 items-center justify-center rounded-full text-xl"
+          style={{ opacity: saved ? 1 : 0.55 }}
         >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinejoin="round"
-            aria-hidden
-          >
-            <path d="M20.5 11.7a7.8 7.8 0 0 1-8.5 7.8 8.6 8.6 0 0 1-2.9-.5L4 21l1.6-4.6a7.7 7.7 0 0 1-.8-3.4 7.8 7.8 0 0 1 8-7.7 7.8 7.8 0 0 1 7.7 6.4z" />
-          </svg>
+          💬
         </button>
       </div>
 
@@ -280,7 +270,9 @@ export function CheckInRow({
             </div>
 
             <div className="mt-4 min-h-0 overflow-y-auto">
-              <div className="text-sm font-bold" style={{ color: "var(--color-text)" }}>
+              {/* Same size as the text it introduces, bold so it still
+                  separates from it without competing with the habit name. */}
+              <div className="text-base font-bold" style={{ color: "var(--color-text)" }}>
                 Description
               </div>
               <p

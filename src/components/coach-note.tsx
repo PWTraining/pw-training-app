@@ -44,7 +44,11 @@ export function CoachNote({ note, day = TODAY_INDEX }: { note: string; day?: num
   return (
     <section
       className="rounded-[var(--radius-lg)] border-2 p-4"
-      style={{ background: "var(--color-note)", borderColor: "var(--color-brand-red)" }}
+      /* Still unmistakably the red card, just not shouting. */
+      style={{
+        background: "var(--color-note)",
+        borderColor: "color-mix(in srgb, var(--color-brand-red) 55%, var(--color-note))",
+      }}
     >
       <div className="mb-2 flex items-center gap-2.5">
         <span className="text-lg leading-none" aria-hidden>

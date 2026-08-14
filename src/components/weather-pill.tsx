@@ -199,18 +199,31 @@ export function WeatherHeader({ children }: { children: React.ReactNode }) {
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
             aria-label={`${weather.tempC} degrees, ${weather.summary}. Tap for the day's forecast`}
-            className="flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-sm font-medium tabular-nums"
+            className="flex h-12 shrink-0 items-center gap-2 rounded-full border-2 px-4 text-lg font-semibold tabular-nums"
             style={{
               borderColor: open ? "var(--color-brand)" : "var(--color-border)",
               background: "var(--color-surface)",
               color: "var(--color-text)",
             }}
           >
-            <span aria-hidden>{weather.emoji}</span>
-            {weather.tempC}&deg;
-            <span className="text-[9px]" style={{ color: "var(--color-text-muted)" }} aria-hidden>
-              {open ? "▲" : "▼"}
+            <span className="text-xl leading-none" aria-hidden>
+              {weather.emoji}
             </span>
+            {weather.tempC}&deg;
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ color: "var(--color-text-muted)" }}
+              aria-hidden
+            >
+              <path d={open ? "M6 15l6-6 6 6" : "M6 9l6 6 6-6"} />
+            </svg>
           </button>
         )}
       </div>

@@ -71,10 +71,22 @@ export default function TrainPage() {
               onClick={() => changeWeek(-1)}
               disabled={weekOffset <= minOffset}
               aria-label="Previous week"
-              className="flex h-8 w-8 items-center justify-center rounded-full text-lg disabled:opacity-30"
+              className="flex h-11 w-11 items-center justify-center rounded-full disabled:opacity-30"
               style={{ color: "var(--color-text)" }}
             >
-              ‹
+              <svg
+                width="26"
+                height="26"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="M15 5 8 12l7 7" />
+              </svg>
             </button>
             <div className="flex flex-col items-center">
               <span className="text-base font-bold" style={{ color: "var(--color-text)" }}>
@@ -96,14 +108,28 @@ export default function TrainPage() {
               onClick={() => changeWeek(1)}
               disabled={weekOffset >= MAX_WEEK_OFFSET}
               aria-label="Next week"
-              className="flex h-8 w-8 items-center justify-center rounded-full text-lg disabled:opacity-30"
+              className="flex h-11 w-11 items-center justify-center rounded-full disabled:opacity-30"
               style={{ color: "var(--color-text)" }}
             >
-              ›
+              <svg
+                width="26"
+                height="26"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="m9 5 7 7-7 7" />
+              </svg>
             </button>
           </div>
 
-          <div className="flex flex-col gap-1.5">
+          {/* The week has the screen to itself now, so the rows can breathe
+              and still fit a phone without scrolling. */}
+          <div className="flex flex-col gap-2">
             {weekDays.map((day) => {
               const isTraining = !!day.session;
               const isToday = day.status === "today";
@@ -126,7 +152,7 @@ export default function TrainPage() {
                 <Link
                   key={day.key}
                   href={`/train/${day.key}`}
-                  className="flex items-center gap-2.5 rounded-[var(--radius-md)] px-3 py-2 text-left"
+                  className="flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2.5 text-left"
                   style={{
                     // Only today is filled. Every other row is plain, with a
                     // green outline marking the training days.

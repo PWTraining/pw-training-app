@@ -59,7 +59,7 @@ export function DailyReflection({ day = TODAY_INDEX }: { day?: number }) {
           <textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            placeholder="Anything to add today?"
+            placeholder="Capture what's on your mind today"
             rows={3}
             className="w-full resize-none rounded-[var(--radius-sm)] border px-3 py-2 text-sm italic leading-relaxed outline-none"
             style={{

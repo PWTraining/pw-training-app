@@ -53,6 +53,9 @@ export function exercisesForDate(date: Date): Exercise[] {
 export type SessionLog = {
   sets: Record<string, SetLog[]>;
   saved: boolean;
+  // One note per exercise, plus one for the session as a whole.
+  notes?: Record<string, string>;
+  sessionNote?: string;
 };
 
 type LogStore = Record<string, SessionLog>;
@@ -99,11 +102,16 @@ export function useTrainLog() {
   const sessionFor = useCallback(
     (key: string, exercises: Exercise[]): SessionLog => {
       const stored = store[key];
-      if (!stored) return { sets: emptySets(exercises), saved: false };
+      if (!stored) return { sets: emptySets(exercises), saved: false, notes: {}, sessionNote: "" };
       // Programming can change under a half-logged session, so fill in any
       // exercise that has no rows yet rather than trusting what was saved.
       const sets = { ...emptySets(exercises), ...stored.sets };
-      return { sets, saved: stored.saved };
+      return {
+        sets,
+        saved: stored.saved,
+        notes: stored.notes ?? {},
+        sessionNote: stored.sessionNote ?? "",
+      };
     },
     [store],
   );
@@ -135,6 +143,26 @@ export function useTrainLog() {
     });
   }, []);
 
+  const setNote = useCallback(
+    (key: string, exercises: Exercise[], exerciseId: string, text: string) => {
+      setStore((prev) => {
+        const current = prev[key] ?? { sets: emptySets(exercises), saved: false };
+        return {
+          ...prev,
+          [key]: { ...current, notes: { ...(current.notes ?? {}), [exerciseId]: text } },
+        };
+      });
+    },
+    [],
+  );
+
+  const setSessionNote = useCallback((key: string, exercises: Exercise[], text: string) => {
+    setStore((prev) => {
+      const current = prev[key] ?? { sets: emptySets(exercises), saved: false };
+      return { ...prev, [key]: { ...current, sessionNote: text } };
+    });
+  }, []);
+
   const isSessionSaved = useCallback((key: string) => store[key]?.saved ?? false, [store]);
 
   // Any set with a number in it counts as started, so a half-done session
@@ -147,5 +175,14 @@ export function useTrainLog() {
     [store],
   );
 
-  return { hydrated, sessionFor, updateSet, setSaved, isSessionSaved, isSessionStarted };
+  return {
+    hydrated,
+    sessionFor,
+    updateSet,
+    setSaved,
+    setNote,
+    setSessionNote,
+    isSessionSaved,
+    isSessionStarted,
+  };
 }
