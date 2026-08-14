@@ -110,14 +110,14 @@ export default function HomePage() {
         )}
 
         {MOCK_COACH_COMMENT && (
-          /* Deliberately unlike Today's Session: that card is teal, outlined
-             and action-shaped. This is a filled message from a person, in
-             the logo red, so the two never read as the same kind of thing. */
+          /* Set apart from Today's Session by form rather than alarm: a
+             filled warm note with a face on it, against that card's teal
+             outline and button. Nothing here should read as a warning. */
           <section
-            className="rounded-[var(--radius-lg)] p-4"
+            className="rounded-[var(--radius-lg)] border p-4"
             style={{
-              background: "color-mix(in srgb, var(--color-brand-red) 12%, var(--color-surface))",
-              boxShadow: "inset 0 0 0 2px var(--color-brand-red)",
+              background: "var(--color-note)",
+              borderColor: "var(--color-note-border)",
             }}
           >
             <div className="mb-2 flex items-center gap-2.5">
@@ -128,16 +128,8 @@ export default function HomePage() {
               >
                 PW
               </span>
-              <div>
-                <div
-                  className="text-sm font-extrabold uppercase tracking-wide"
-                  style={{ color: "var(--color-brand-red)" }}
-                >
-                  Message from Paul
-                </div>
-                <div className="text-[11px]" style={{ color: "var(--color-text-muted)" }}>
-                  Read this before you log today
-                </div>
+              <div className="text-sm font-bold" style={{ color: "var(--color-text)" }}>
+                Coach&rsquo;s Note
               </div>
             </div>
             <p

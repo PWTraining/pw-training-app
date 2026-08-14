@@ -28,6 +28,11 @@
   --color-brand-teal: #1f92a3;
   --color-brand-ink: #141414; /* logo outline black */
 
+  /* A warm, quiet ground for notes from the coach. Deliberately not a
+     status colour — a message to read should not look like an alert. */
+  --color-note: #f8f3ea;
+  --color-note-border: #e6dcc9;
+
   /* Semantic status — success borrows the logo lime's darker sibling so it
      stays legible on white; danger sits away from the logo red so a
      destructive action never looks like branding. */
@@ -87,6 +92,8 @@
     --color-border: #2a2b2f;
     --color-text: #f3f3f3;
     --color-text-muted: #9a9a9a;
+    --color-note: #211f1a;
+    --color-note-border: #38332a;
   }
 }
 
@@ -108,6 +115,8 @@
   --color-success: var(--color-success);
   --color-warning: var(--color-warning);
   --color-danger: var(--color-danger);
+  --color-note: var(--color-note);
+  --color-note-border: var(--color-note-border);
   --ring-green-90: var(--ring-green-90);
   --ring-green-100: var(--ring-green-100);
   --habit-color-1: var(--habit-color-1);

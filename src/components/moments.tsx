@@ -45,8 +45,14 @@ export function Moments({ day = TODAY_INDEX }: { day?: number }) {
       style={{ borderColor: "var(--color-border)" }}
     >
       <div className="mb-1 flex items-baseline justify-between gap-2">
-        <h2 className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>
-          Moments
+        <h2
+          className="flex items-center gap-1.5 text-sm font-semibold"
+          style={{ color: "var(--color-text)" }}
+        >
+          <span className="text-base leading-none" aria-hidden>
+            📷
+          </span>
+          Photos
         </h2>
         <span className="text-[11px]" style={{ color: "var(--color-text-muted)" }}>
           {photos.length} of {MAX_PHOTOS_PER_DAY}
@@ -113,7 +119,7 @@ export function Moments({ day = TODAY_INDEX }: { day?: number }) {
           ? "Adding…"
           : remaining <= 0
             ? `That's all ${MAX_PHOTOS_PER_DAY} for today`
-            : "+ Add photos"}
+            : "📷  Add photos"}
       </button>
 
       {open && (
