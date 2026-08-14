@@ -8,6 +8,7 @@ const SECTIONS = [
   { href: "/profile/roadmap", emoji: "🗺️", title: "Roadmap", blurb: "Your phases and non-negotiables" },
   { href: "/profile/documents", emoji: "📋", title: "Documents", blurb: "Protocols written for you" },
   { href: "/profile/metrics", emoji: "📏", title: "Metrics", blurb: "Measurements over time" },
+  { href: "/profile/photos", emoji: "📷", title: "Progress Photos", blurb: "See the change the scale misses" },
   { href: "/profile/testing", emoji: "🧪", title: "Testing", blurb: "Strength and fitness benchmarks" },
   { href: "/profile/nutrition", emoji: "🥗", title: "Nutrition", blurb: "Targets and food guidance" },
 ];
