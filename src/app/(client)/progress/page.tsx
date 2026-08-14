@@ -29,12 +29,11 @@ const LIST_TIMEFRAMES: Timeframe[] = ["Daily", "Weekly", "Monthly", "Yearly"];
 const LIST_TIMEFRAME_LABELS = { Daily: "Today", Weekly: "Week", Monthly: "Block", Yearly: "Year" };
 
 export default function ProgressPage() {
-  const { habits, todayValue, restoreHabit } = useHabits();
+  const { habits, todayValue } = useHabits();
   const [addOpen, setAddOpen] = useState(false);
   const [timeframe, setTimeframe] = useState<Timeframe>("Weekly");
 
   const activeHabits = useMemo(() => habits.filter((h) => !h.archived), [habits]);
-  const archivedHabits = useMemo(() => habits.filter((h) => h.archived), [habits]);
 
   const adherenceValues = useMemo<Partial<Record<Timeframe, number>>>(() => {
     function avgHabitsPct(period: Timeframe) {
@@ -130,7 +129,7 @@ export default function ProgressPage() {
           </button>
         </section>
 
-        <SectionDivider label="Body, Mind & Spirit" />
+        <SectionDivider label="Mind, Body & Spirit" />
         <p className="-mt-3 px-1 text-xs italic" style={{ color: "var(--color-text-muted)" }}>
           How you&rsquo;re feeling, not a task to tick off — logged on Home.
         </p>
@@ -181,35 +180,6 @@ export default function ProgressPage() {
 
         <CheckInCallsCard />
 
-        {archivedHabits.length > 0 && (
-          <>
-            <SectionDivider label="Archive" />
-            <section className="flex flex-col gap-2">
-              {archivedHabits.map((habit) => (
-                <div
-                  key={habit.id}
-                  className="flex items-center gap-2.5 rounded-[var(--radius-md)] border px-3 py-2.5"
-                  style={{ borderColor: "var(--color-border)" }}
-                >
-                  <span className="text-xl leading-none opacity-60" aria-hidden>
-                    {habit.emoji}
-                  </span>
-                  <span className="flex-1 text-sm" style={{ color: "var(--color-text-muted)" }}>
-                    {habit.label}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => restoreHabit(habit.id)}
-                    className="rounded-full px-3 py-1 text-xs font-medium"
-                    style={{ color: "var(--color-brand)" }}
-                  >
-                    Restore
-                  </button>
-                </div>
-              ))}
-            </section>
-          </>
-        )}
       </div>
 
       <AddHabitSheet open={addOpen} onClose={() => setAddOpen(false)} />

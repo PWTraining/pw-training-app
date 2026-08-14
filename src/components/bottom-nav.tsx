@@ -8,7 +8,7 @@ const TABS = [
   { href: "/train", label: "Train", icon: "🏋" },
   { href: "/progress", label: "Progress", icon: "✓" },
   { href: "/chat", label: "Chat", icon: "💬" },
-  { href: "/profile", label: "Profile", icon: "◍" },
+  { href: "/profile", label: "Profile", icon: "👤" },
 ] as const;
 
 export function BottomNav() {

@@ -1,13 +1,18 @@
-import { ProfileSubPage, StatRows } from "@/components/profile-subpage";
-import { MOCK_HEALTH_STATS } from "@/lib/portal-mocks";
+import { ProfileSubPage } from "@/components/profile-subpage";
+import { EditableStats } from "@/components/editable-stats";
+import { DEFAULT_METRICS } from "@/lib/portal-mocks";
 
 export default function MetricsPage() {
   return (
     <ProfileSubPage
       title="Metrics"
-      intro="Measurements taken at the start of each block. Trends matter more than any single number."
+      intro="Height, weight, measurements and body composition. Trends matter more than any single number."
     >
-      <StatRows stats={MOCK_HEALTH_STATS} />
+      <EditableStats
+        storageKey="pw-profile-metrics"
+        defaults={DEFAULT_METRICS}
+        addLabel="+ Add a measurement"
+      />
     </ProfileSubPage>
   );
 }

@@ -38,34 +38,53 @@ export const MOCK_PROFILE = {
   name: "Paul Wintle",
   tagline: "1:1 Coaching",
   startDate: "5 August 2026",
-  stats: [
-    { label: "Height", value: "183cm" },
-    { label: "Weight", value: "88.0kg" },
-    { label: "Goal", value: "Lean 84kg" },
-    { label: "Block", value: "1 of 4" },
-  ],
+  // ISO so age can be derived rather than stored and going stale.
+  birthday: "1990-03-14",
 };
 
-export const MOCK_METRICS = [
-  { label: "Bench 1RM", value: "100kg" },
-  { label: "5km", value: "24:10" },
-  { label: "Deadlift 1RM", value: "140kg" },
+export function ageFrom(isoBirthday: string) {
+  const born = new Date(isoBirthday);
+  const now = new Date();
+  let age = now.getFullYear() - born.getFullYear();
+  const monthDiff = now.getMonth() - born.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < born.getDate())) age -= 1;
+  return age;
+}
+
+export function formatBirthday(isoBirthday: string) {
+  return new Date(isoBirthday).toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+// Seeds for the editable Profile sub-pages. Once edited, the client's own
+// values live in localStorage and these are only the starting point.
+export const DEFAULT_METRICS = [
+  { id: "height", label: "Height", value: "183cm" },
+  { id: "weight", label: "Weight", value: "88.0kg" },
+  { id: "goal", label: "Goal", value: "Lean 84kg" },
+  { id: "bodyfat", label: "Body fat", value: "18%" },
+  { id: "arms", label: "Arms", value: "38cm" },
+  { id: "waist", label: "Waist", value: "84cm" },
+  { id: "hips", label: "Hips", value: "98cm" },
+  { id: "thighs", label: "Thighs", value: "58cm" },
 ];
 
-export const MOCK_HEALTH_STATS = [
-  { label: "Weight", value: "88.0kg" },
-  { label: "Arms", value: "38cm" },
-  { label: "Waist", value: "84cm" },
-  { label: "Hips", value: "98cm" },
-  { label: "Thighs", value: "58cm" },
+export const DEFAULT_TESTING = [
+  { id: "bench", label: "Bench 1RM", value: "100kg" },
+  { id: "deadlift", label: "Deadlift 1RM", value: "140kg" },
+  { id: "squat", label: "Squat 1RM", value: "120kg" },
+  { id: "run5k", label: "5km", value: "24:10" },
 ];
 
-export const MOCK_FOOD_SNAPSHOT = {
-  calories: "2800-3000kcal",
-  protein: "150-170g",
-  carbs: "380-400g",
-  fat: "70-90g",
-};
+export const DEFAULT_NUTRITION = [
+  { id: "calories", label: "Calories", value: "2800-3000kcal" },
+  { id: "protein", label: "Protein", value: "150-170g" },
+  { id: "carbs", label: "Carbs", value: "380-400g" },
+  { id: "fat", label: "Fat", value: "70-90g" },
+];
 
 export type PortalDocument = {
   id: string;

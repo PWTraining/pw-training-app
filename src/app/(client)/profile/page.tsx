@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { TopBar } from "@/components/top-bar";
-import { MOCK_PROFILE } from "@/lib/portal-mocks";
+import { MOCK_PROFILE, ageFrom, formatBirthday } from "@/lib/portal-mocks";
 
 // Everything reachable from the profile. Each one is its own rabbit hole —
 // same plain callout treatment as the Documents list.
@@ -27,14 +27,14 @@ export default function ProfilePage() {
 
       <div className="flex flex-col gap-5 px-4 pt-6 pb-6">
         <section className="flex flex-col items-center gap-3 text-center">
-          {/* Placeholder avatar until real accounts carry a photo — swap the
-              inner span for an <Image> and the ring stays as it is. */}
+          {/* Initials stand in until a real photo exists — swap the inner
+              span for an <Image> and the green ring stays exactly as it is. */}
           <div
             className="flex h-24 w-24 items-center justify-center rounded-full text-2xl font-bold"
             style={{
-              background: "color-mix(in srgb, var(--color-brand) 12%, var(--color-surface))",
+              background: "color-mix(in srgb, var(--color-brand) 10%, var(--color-surface))",
               color: "var(--color-brand)",
-              boxShadow: "0 0 0 3px var(--color-surface), 0 0 0 5px var(--color-brand)",
+              boxShadow: "0 0 0 3px var(--color-surface), 0 0 0 6px #45d268",
             }}
             aria-hidden
           >
@@ -48,33 +48,17 @@ export default function ProfilePage() {
             <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
               {MOCK_PROFILE.tagline} &middot; since {MOCK_PROFILE.startDate}
             </p>
-          </div>
-        </section>
-
-        <section
-          className="grid grid-cols-4 gap-px overflow-hidden rounded-[var(--radius-lg)] border"
-          style={{ borderColor: "var(--color-border)", background: "var(--color-border)" }}
-        >
-          {MOCK_PROFILE.stats.map((stat) => (
-            <div
-              key={stat.label}
-              className="flex flex-col items-center gap-0.5 py-3"
-              style={{ background: "var(--color-surface)" }}
+            {/* Age ticks over on a date the server can't know in the viewer's
+                timezone, so let the client's number win. */}
+            <p
+              className="mt-1 text-xs"
+              style={{ color: "var(--color-text-muted)" }}
+              suppressHydrationWarning
             >
-              <div
-                className="text-sm font-bold tabular-nums"
-                style={{ color: "var(--color-text)" }}
-              >
-                {stat.value}
-              </div>
-              <div
-                className="text-[10px] uppercase tracking-wide"
-                style={{ color: "var(--color-text-muted)" }}
-              >
-                {stat.label}
-              </div>
-            </div>
-          ))}
+              🎂 {formatBirthday(MOCK_PROFILE.birthday)} &middot;{" "}
+              {ageFrom(MOCK_PROFILE.birthday)} years old
+            </p>
+          </div>
         </section>
 
         <section className="flex flex-col gap-3">

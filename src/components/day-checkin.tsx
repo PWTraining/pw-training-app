@@ -8,8 +8,8 @@ import { useHabits } from "@/lib/habits-context";
 import { TODAY_INDEX, MAX_ACTIVE_HABITS } from "@/lib/habits";
 
 export const MOOD_ENTRIES = [
-  { id: "physical", emoji: "💪", label: "Body" },
   { id: "mind", emoji: "🧠", label: "Mind" },
+  { id: "physical", emoji: "💪", label: "Body" },
   { id: "spirit", emoji: "☮️", label: "Spirit" },
 ] as const;
 
@@ -78,7 +78,7 @@ export function DayCheckIn({ day = TODAY_INDEX }: { day?: number }) {
         style={{ borderColor: "var(--color-border)" }}
       >
         <h2 className="mb-1 text-sm font-semibold" style={{ color: "var(--color-text)" }}>
-          Body, Mind &amp; Spirit
+          Mind, Body &amp; Spirit
         </h2>
         <p className="mb-2 text-xs" style={{ color: "var(--color-text-muted)" }}>
           How do you feel today?

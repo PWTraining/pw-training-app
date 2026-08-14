@@ -1,5 +1,5 @@
 /*
-  Brand tokens — sourced from the PW Training logo (pink/yellow/green/teal,
+  Brand tokens — sampled from the PW Training logo (red/teal/lime,
   bold black outlines). Swap values here only; nothing outside this file
   should hard-code a hex value or font name.
 */
@@ -13,19 +13,27 @@
   --color-text: #14171a;
   --color-text-muted: #6b6b6b;
 
-  /* Brand palette, from the logo */
-  --color-brand: #ec1e82; /* PW pink */
-  --color-brand-contrast: #ffffff;
-  --color-brand-yellow: #f9c935;
-  --color-brand-green: #3caf64;
-  --color-brand-teal: #2aada0;
-  --color-brand-ink: #14171a; /* logo outline black */
+  /* Brand palette, sampled from the logo art.
 
-  /* Semantic status — greens/yellows lean on the brand palette,
-     danger stays a clear red since brand has no red to borrow */
-  --color-success: #3caf64;
+     Teal is the primary interactive colour rather than the logo's red:
+     the adherence ramp already spends red on "missed", so a red button or
+     active tab would read as a bad score. Red stays the identity colour
+     for the logo and headline accents, where it can't be misread. */
+  --color-brand: #1f92a3; /* logo teal */
+  --color-brand-contrast: #ffffff;
+  --color-brand-red: #f5382f; /* logo red, accents only */
+  --color-brand-lime: #a8e64f;
+  --color-brand-yellow: #a8e64f;
+  --color-brand-green: #a8e64f;
+  --color-brand-teal: #1f92a3;
+  --color-brand-ink: #141414; /* logo outline black */
+
+  /* Semantic status — success borrows the logo lime's darker sibling so it
+     stays legible on white; danger sits away from the logo red so a
+     destructive action never looks like branding. */
+  --color-success: #4fae3f;
   --color-warning: #d97706;
-  --color-danger: #dc2626;
+  --color-danger: #b3261e;
 
   /* Adherence / well-being gradient — 0-100% in 10% steps.
      Dark red -> orange -> yellow -> green, matches Paul's existing
@@ -51,10 +59,10 @@
      each habit keeps the same colour regardless of list order. Used for
      row accents on Home and the grid header on Progress, never tied to a
      logged value the way the adherence scale is. */
-  --habit-color-1: #ec1e82;
-  --habit-color-2: #3caf64;
-  --habit-color-3: #f9c935;
-  --habit-color-4: #2aada0;
+  --habit-color-1: #f5382f;
+  --habit-color-2: #4fae3f;
+  --habit-color-3: #a8e64f;
+  --habit-color-4: #1f92a3;
   --habit-color-5: #8b5cf6;
   --habit-color-6: #3b82f6;
   --habit-color-7: #f97316;
@@ -91,6 +99,8 @@
   --color-text-muted: var(--color-text-muted);
   --color-brand: var(--color-brand);
   --color-brand-contrast: var(--color-brand-contrast);
+  --color-brand-red: var(--color-brand-red);
+  --color-brand-lime: var(--color-brand-lime);
   --color-brand-yellow: var(--color-brand-yellow);
   --color-brand-green: var(--color-brand-green);
   --color-brand-teal: var(--color-brand-teal);

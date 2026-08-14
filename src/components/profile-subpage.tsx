@@ -43,30 +43,3 @@ export function ProfileSubPage({
     </div>
   );
 }
-
-export function StatRows({ stats }: { stats: { label: string; value: string }[] }) {
-  return (
-    <section
-      className="overflow-hidden rounded-[var(--radius-lg)] border"
-      style={{ borderColor: "var(--color-border)" }}
-    >
-      {stats.map((stat, i) => (
-        <div
-          key={stat.label}
-          className="flex items-center justify-between px-4 py-3"
-          style={{ borderTop: i === 0 ? "none" : "1px solid var(--color-border)" }}
-        >
-          <span className="text-sm" style={{ color: "var(--color-text)" }}>
-            {stat.label}
-          </span>
-          <span
-            className="text-sm font-semibold tabular-nums"
-            style={{ color: "var(--color-text)" }}
-          >
-            {stat.value}
-          </span>
-        </div>
-      ))}
-    </section>
-  );
-}
