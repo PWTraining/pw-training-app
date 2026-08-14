@@ -5,6 +5,7 @@ import Link from "next/link";
 import { TopBar } from "@/components/top-bar";
 import { WeatherPill } from "@/components/weather-pill";
 import { DayCheckIn } from "@/components/day-checkin";
+import { DailyReflection } from "@/components/daily-reflection";
 import { ProgramAdherence } from "@/components/program-adherence";
 import { useHabits } from "@/lib/habits-context";
 import { MOCK_TRAINING_PCT, MOCK_COACH_COMMENT, weeklyPct, type Timeframe } from "@/lib/habits";
@@ -14,9 +15,7 @@ const HOME_TIMEFRAMES: Timeframe[] = ["Daily", "Weekly"];
 const HOME_TIMEFRAME_LABELS = { Daily: "Today", Weekly: "This week" };
 
 export default function HomePage() {
-  const { habits, dayComment, setDayComment, todayValue } = useHabits();
-  const [draftComment, setDraftComment] = useState(dayComment);
-  const [saved, setSaved] = useState(false);
+  const { habits, todayValue } = useHabits();
   const [timeframe, setTimeframe] = useState<Timeframe>("Weekly");
   const session = useMemo(() => todaysSession(), []);
 
@@ -37,11 +36,6 @@ export default function HomePage() {
     };
   }, [habits, todayValue]);
 
-  function submitComment() {
-    setDayComment(draftComment);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1500);
-  }
 
   return (
     <div>
@@ -138,34 +132,8 @@ export default function HomePage() {
 
         <DayCheckIn />
 
-        <section
-          className="rounded-[var(--radius-lg)] border p-4"
-          style={{ borderColor: "var(--color-border)" }}
-        >
-          <h2 className="mb-2 text-sm font-semibold" style={{ color: "var(--color-text)" }}>
-            Daily Reflection
-          </h2>
-          <textarea
-            value={draftComment}
-            onChange={(e) => setDraftComment(e.target.value)}
-            placeholder="Anything to add today?"
-            rows={2}
-            className="w-full resize-none rounded-[var(--radius-sm)] border px-3 py-2 text-sm outline-none"
-            style={{
-              borderColor: "var(--color-border)",
-              background: "var(--color-surface)",
-              color: "var(--color-text)",
-            }}
-          />
-          <button
-            type="button"
-            onClick={submitComment}
-            className="mt-2.5 rounded-[var(--radius-sm)] px-4 py-2 text-sm font-medium"
-            style={{ background: "var(--color-brand)", color: "var(--color-brand-contrast)" }}
-          >
-            {saved ? "Saved" : "Submit"}
-          </button>
-        </section>
+        <DailyReflection />
+
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { DEFAULT_HABITS, MOCK_BLOCK, MOCK_COMMENTS, TODAY_INDEX, type Habit } from "./habits";
 
 const HABITS_KEY = "pw-habits";
@@ -9,6 +9,7 @@ const COMMENTS_KEY = "pw-habit-comments";
 const DAY_COMMENT_KEY = "pw-day-comment";
 const TODAY_VALUES_KEY = "pw-today-values";
 const DAY_VALUES_KEY = "pw-day-values";
+const REFLECTIONS_KEY = "pw-day-reflections";
 
 export type HabitHistoryEntry = {
   action: "added" | "archived" | "restored" | "renamed";
@@ -25,6 +26,19 @@ type TodayValues = Record<string, number>;
 // they've touched appear here; anything absent falls back to the mock block
 // history, so this is an override layer rather than a replacement for it.
 type DayValues = Record<string, Record<number, number>>;
+
+// One free-text reflection per day of the block.
+type Reflections = Record<number, string>;
+
+// Everything a single undo step needs to put back.
+type Snapshot = {
+  habits: Habit[];
+  comments: CommentsByHabit;
+  dayValues: DayValues;
+  reflections: Reflections;
+};
+
+const UNDO_LIMIT = 40;
 
 const DEFAULT_COMMENTS: CommentsByHabit = Object.fromEntries(
   Object.entries(MOCK_COMMENTS).map(([id, comments]) => [
@@ -59,16 +73,19 @@ type HabitsContextValue = {
   setHabitEmoji: (id: string, emoji: string) => void;
   reorderHabits: (orderedIds: string[]) => void;
   history: HabitHistoryEntry[];
+  commentFor: (habitId: string, day?: number) => string;
   commentsFor: (habitId: string) => StoredComment[];
   hasComments: (habitId: string) => boolean;
-  addComment: (habitId: string, text: string, day?: number) => void;
-  dayComment: string;
-  setDayComment: (text: string) => void;
+  setComment: (habitId: string, text: string, day?: number) => void;
+  reflectionFor: (day?: number) => string;
+  setReflection: (text: string, day?: number) => void;
   todayValue: (habitId: string) => number;
   setTodayValue: (habitId: string, value: number) => void;
   dayValue: (habitId: string, day: number) => number;
   setDayValue: (habitId: string, day: number, value: number) => void;
   isDayLogged: (day: number) => boolean;
+  undo: () => void;
+  canUndo: boolean;
 };
 
 const HabitsContext = createContext<HabitsContextValue | null>(null);
@@ -88,28 +105,24 @@ function readDayValue(dayValues: DayValues, habitId: string, day: number) {
   return dayValues[habitId]?.[day] ?? MOCK_BLOCK[habitId]?.[day] ?? 0;
 }
 
-function writeDayValue(
-  setDayValues: React.Dispatch<React.SetStateAction<DayValues>>,
-  habitId: string,
-  day: number,
-  value: number,
-) {
-  setDayValues((prev) => ({ ...prev, [habitId]: { ...(prev[habitId] ?? {}), [day]: value } }));
-}
-
 export function HabitsProvider({ children }: { children: React.ReactNode }) {
   const [habits, setHabits] = useState<Habit[]>(DEFAULT_HABITS);
   const [history, setHistory] = useState<HabitHistoryEntry[]>([]);
   const [comments, setComments] = useState<CommentsByHabit>(DEFAULT_COMMENTS);
-  const [dayComment, setDayComment] = useState("");
   const [dayValues, setDayValues] = useState<DayValues>(DEFAULT_DAY_VALUES);
+  const [reflections, setReflections] = useState<Reflections>({});
+  const [undoStack, setUndoStack] = useState<Snapshot[]>([]);
   const [hydrated, setHydrated] = useState(false);
+
+  // Dragging a slider fires a change per step; without this every step would
+  // become its own undo, so consecutive edits to the same thing collapse
+  // into the one snapshot taken before the first of them.
+  const lastActionKey = useRef<string | null>(null);
 
   useEffect(() => {
     const storedHabits = loadJSON(HABITS_KEY, DEFAULT_HABITS);
     const storedHistory = loadJSON(HISTORY_KEY, [] as HabitHistoryEntry[]);
     const storedComments = loadJSON(COMMENTS_KEY, DEFAULT_COMMENTS);
-    const storedDayComment = loadJSON(DAY_COMMENT_KEY, "");
     // Older builds stored a single value per habit under TODAY_VALUES_KEY.
     // Fold those into day-keyed storage at today's index so an existing
     // client doesn't lose the day they'd already logged.
@@ -124,12 +137,18 @@ export function HabitsProvider({ children }: { children: React.ReactNode }) {
         ]),
       );
 
+    // The single global reflection older builds kept becomes today's entry.
+    const legacyReflection = loadJSON(DAY_COMMENT_KEY, "");
+    const storedReflections = loadJSON(REFLECTIONS_KEY, null as Reflections | null);
+    const mergedReflections =
+      storedReflections ?? (legacyReflection ? { [TODAY_INDEX]: legacyReflection } : {});
+
     Promise.resolve().then(() => {
       setHabits(storedHabits);
       setHistory(storedHistory);
       setComments(storedComments);
-      setDayComment(storedDayComment);
       setDayValues(mergedDayValues);
+      setReflections(mergedReflections);
       setHydrated(true);
     });
   }, []);
@@ -151,19 +170,35 @@ export function HabitsProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!hydrated) return;
-    window.localStorage.setItem(DAY_COMMENT_KEY, JSON.stringify(dayComment));
-  }, [dayComment, hydrated]);
-
-  useEffect(() => {
-    if (!hydrated) return;
     window.localStorage.setItem(DAY_VALUES_KEY, JSON.stringify(dayValues));
   }, [dayValues, hydrated]);
 
-  const value = useMemo<HabitsContextValue>(
-    () => ({
+  useEffect(() => {
+    if (!hydrated) return;
+    window.localStorage.setItem(REFLECTIONS_KEY, JSON.stringify(reflections));
+  }, [reflections, hydrated]);
+
+  const value = useMemo<HabitsContextValue>(() => {
+    // Snapshot the state as it is before a change lands, so undo restores
+    // exactly what was on screen a moment ago.
+    function remember(coalesceKey?: string) {
+      if (coalesceKey && lastActionKey.current === coalesceKey) return;
+      lastActionKey.current = coalesceKey ?? null;
+      setUndoStack((prev) =>
+        [...prev, { habits, comments, dayValues, reflections }].slice(-UNDO_LIMIT),
+      );
+    }
+
+    function writeDayValue(habitId: string, day: number, val: number) {
+      remember(`value:${habitId}:${day}`);
+      setDayValues((prev) => ({ ...prev, [habitId]: { ...(prev[habitId] ?? {}), [day]: val } }));
+    }
+
+    return {
       habits,
       addHabit: (habit) => {
         if (habits.some((h) => h.id === habit.id)) return;
+        remember();
         setHabits((prev) => [...prev, habit]);
         setHistory((prev) => [
           ...prev,
@@ -173,6 +208,7 @@ export function HabitsProvider({ children }: { children: React.ReactNode }) {
       archiveHabit: (id) => {
         const target = habits.find((h) => h.id === id);
         if (!target) return;
+        remember();
         setHabits((prev) => prev.map((h) => (h.id === id ? { ...h, archived: true } : h)));
         setHistory((prev) => [
           ...prev,
@@ -182,6 +218,7 @@ export function HabitsProvider({ children }: { children: React.ReactNode }) {
       restoreHabit: (id) => {
         const target = habits.find((h) => h.id === id);
         if (!target) return;
+        remember();
         setHabits((prev) => prev.map((h) => (h.id === id ? { ...h, archived: false } : h)));
         setHistory((prev) => [
           ...prev,
@@ -191,6 +228,8 @@ export function HabitsProvider({ children }: { children: React.ReactNode }) {
       renameHabit: (id, label) => {
         const trimmed = label.trim();
         if (!trimmed) return;
+        if (habits.find((h) => h.id === id)?.label === trimmed) return;
+        remember(`rename:${id}`);
         setHabits((prev) => prev.map((h) => (h.id === id ? { ...h, label: trimmed } : h)));
         setHistory((prev) => [
           ...prev,
@@ -198,40 +237,62 @@ export function HabitsProvider({ children }: { children: React.ReactNode }) {
         ]);
       },
       setHabitEmoji: (id, emoji) => {
+        remember(`emoji:${id}`);
         setHabits((prev) => prev.map((h) => (h.id === id ? { ...h, emoji } : h)));
       },
       // Takes the new order for a subset of habits (the active ones being
       // dragged) and reconciles it against the full list, leaving anything
       // not included (e.g. archived habits) in place at the end.
       reorderHabits: (orderedIds) => {
+        remember("reorder");
         setHabits((prev) => {
           const byId = new Map(prev.map((h) => [h.id, h]));
-          const reordered = orderedIds
-            .map((id) => byId.get(id))
-            .filter((h): h is Habit => !!h);
+          const reordered = orderedIds.map((id) => byId.get(id)).filter((h): h is Habit => !!h);
           const remaining = prev.filter((h) => !orderedIds.includes(h.id));
           return [...reordered, ...remaining];
         });
       },
       history,
+      // One comment per habit per day — writing again replaces it rather
+      // than stacking a second note underneath.
+      commentFor: (habitId, day = TODAY_INDEX) =>
+        comments[habitId]?.find((c) => c.day === day)?.text ?? "",
       commentsFor: (habitId) => comments[habitId] ?? [],
       hasComments: (habitId) => (comments[habitId]?.length ?? 0) > 0,
-      addComment: (habitId, text, day = TODAY_INDEX) => {
-        setComments((prev) => ({
-          ...prev,
-          [habitId]: [...(prev[habitId] ?? []), { day, text, at: new Date().toISOString() }],
-        }));
+      setComment: (habitId, text, day = TODAY_INDEX) => {
+        remember();
+        const trimmed = text.trim();
+        setComments((prev) => {
+          const rest = (prev[habitId] ?? []).filter((c) => c.day !== day);
+          const next = trimmed
+            ? [...rest, { day, text: trimmed, at: new Date().toISOString() }]
+            : rest;
+          return { ...prev, [habitId]: next };
+        });
       },
-      dayComment,
-      setDayComment,
+      reflectionFor: (day = TODAY_INDEX) => reflections[day] ?? "",
+      setReflection: (text, day = TODAY_INDEX) => {
+        remember();
+        setReflections((prev) => ({ ...prev, [day]: text.trim() }));
+      },
       todayValue: (habitId) => readDayValue(dayValues, habitId, TODAY_INDEX),
-      setTodayValue: (habitId, val) => writeDayValue(setDayValues, habitId, TODAY_INDEX, val),
+      setTodayValue: (habitId, val) => writeDayValue(habitId, TODAY_INDEX, val),
       dayValue: (habitId, day) => readDayValue(dayValues, habitId, day),
-      setDayValue: (habitId, day, val) => writeDayValue(setDayValues, habitId, day, val),
+      setDayValue: (habitId, day, val) => writeDayValue(habitId, day, val),
       isDayLogged: (day) => Object.values(dayValues).some((byDay) => byDay[day] !== undefined),
-    }),
-    [habits, history, comments, dayComment, dayValues],
-  );
+      canUndo: undoStack.length > 0,
+      undo: () => {
+        const previous = undoStack[undoStack.length - 1];
+        if (!previous) return;
+        lastActionKey.current = null;
+        setHabits(previous.habits);
+        setComments(previous.comments);
+        setDayValues(previous.dayValues);
+        setReflections(previous.reflections);
+        setUndoStack((prev) => prev.slice(0, -1));
+      },
+    };
+  }, [habits, history, comments, dayValues, reflections, undoStack]);
 
   return <HabitsContext.Provider value={value}>{children}</HabitsContext.Provider>;
 }

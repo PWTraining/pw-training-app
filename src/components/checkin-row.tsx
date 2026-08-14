@@ -23,22 +23,23 @@ export function CheckInRow({
   // set explicitly when the row is editing a past day.
   day?: number;
 }) {
-  const { commentsFor, addComment } = useHabits();
-  const [showComment, setShowComment] = useState(false);
-  const [draft, setDraft] = useState("");
+  const { commentFor, setComment } = useHabits();
+  const targetDay = day ?? TODAY_INDEX;
+  const saved = commentFor(id, targetDay);
+
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState(saved);
 
   const fill = adherenceColor(value);
-  const comments = commentsFor(id);
-  // Only the notes filed against the day being viewed, shown under the row
-  // so a past day reads as a snapshot without opening anything.
-  const dayComments = comments.filter((c) => c.day === (day ?? TODAY_INDEX));
+
+  function startEditing() {
+    setDraft(saved);
+    setOpen(true);
+  }
 
   function submit() {
-    const text = draft.trim();
-    if (!text) return;
-    addComment(id, text, day);
-    setDraft("");
-    setShowComment(false);
+    setComment(id, draft, targetDay);
+    setOpen(false);
   }
 
   return (
@@ -55,12 +56,10 @@ export function CheckInRow({
         </span>
         <button
           type="button"
-          onClick={() => setShowComment((v) => !v)}
-          aria-label={`Leave a comment on ${label}`}
+          onClick={() => (open ? setOpen(false) : startEditing())}
+          aria-label={saved ? `Edit your comment on ${label}` : `Leave a comment on ${label}`}
           className="flex h-6 w-6 shrink-0 items-center justify-center text-sm"
-          style={{
-            color: comments.length > 0 ? "var(--color-brand)" : "var(--color-text-muted)",
-          }}
+          style={{ color: saved ? "var(--color-brand)" : "var(--color-text-muted)" }}
         >
           💬
         </button>
@@ -96,46 +95,58 @@ export function CheckInRow({
         ))}
       </div>
 
-      {dayComments.length > 0 && (
-        <ul className="mt-2 flex flex-col gap-1">
-          {dayComments.map((comment, i) => (
-            <li
-              key={i}
-              className="rounded-[var(--radius-sm)] px-2.5 py-1.5 text-xs"
-              style={{
-                background: "color-mix(in srgb, var(--color-brand) 6%, var(--color-surface))",
-                color: "var(--color-text)",
-              }}
-            >
-              {comment.text}
-            </li>
-          ))}
-        </ul>
+      {/* The saved comment reads as plain text until tapped, so a past day
+          shows as a snapshot rather than a form. */}
+      {saved && !open && (
+        <button
+          type="button"
+          onClick={startEditing}
+          className="mt-2 w-full rounded-[var(--radius-sm)] px-2.5 py-1.5 text-left text-xs"
+          style={{
+            background: "color-mix(in srgb, var(--color-brand) 6%, var(--color-surface))",
+            color: "var(--color-text)",
+          }}
+        >
+          {saved}
+          <span className="ml-1.5 font-semibold" style={{ color: "var(--color-brand)" }}>
+            Edit
+          </span>
+        </button>
       )}
 
-      {showComment && (
-        <div className="mt-2 flex gap-2">
-          <input
-            type="text"
+      {open && (
+        <div className="mt-2 flex flex-col gap-2">
+          <textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && submit()}
             placeholder="Leave a comment"
-            className="flex-1 rounded-[var(--radius-sm)] border px-3 py-1.5 text-xs outline-none"
+            rows={2}
+            autoFocus
+            className="w-full resize-none rounded-[var(--radius-sm)] border px-3 py-2 text-xs outline-none"
             style={{
               borderColor: "var(--color-border)",
               background: "var(--color-bg)",
               color: "var(--color-text)",
             }}
           />
-          <button
-            type="button"
-            onClick={submit}
-            className="rounded-[var(--radius-sm)] px-3 text-xs font-medium"
-            style={{ background: "var(--color-brand)", color: "var(--color-brand-contrast)" }}
-          >
-            Submit
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={submit}
+              className="rounded-[var(--radius-sm)] px-3 py-1.5 text-xs font-semibold"
+              style={{ background: "var(--color-brand)", color: "var(--color-brand-contrast)" }}
+            >
+              {saved ? "Save" : "Submit"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="rounded-[var(--radius-sm)] border px-3 py-1.5 text-xs font-semibold"
+              style={{ borderColor: "var(--color-border)", color: "var(--color-text)" }}
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       )}
     </div>

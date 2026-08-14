@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DayCheckIn } from "@/components/day-checkin";
+import { DailyReflection } from "@/components/daily-reflection";
 import { TODAY_INDEX, fullDate } from "@/lib/habits";
 
 export function DayView({ day }: { day: number }) {
@@ -82,6 +83,7 @@ export function DayView({ day }: { day: number }) {
 
       <div className="flex flex-col gap-5 px-4 pt-4 pb-6">
         <DayCheckIn day={day} />
+        <DailyReflection day={day} />
       </div>
     </div>
   );

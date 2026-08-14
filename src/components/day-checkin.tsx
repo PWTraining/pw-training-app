@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CheckInRow } from "./checkin-row";
 import { HabitEditor } from "./habit-editor";
 import { AddHabitSheet } from "./add-habit-sheet";
+import { UndoButton } from "./undo-button";
 import { useHabits } from "@/lib/habits-context";
 import { TODAY_INDEX, MAX_ACTIVE_HABITS } from "@/lib/habits";
 
@@ -32,14 +33,17 @@ export function DayCheckIn({ day = TODAY_INDEX }: { day?: number }) {
           <h2 className="text-sm font-bold" style={{ color: "var(--color-text)" }}>
             Daily Check-In
           </h2>
-          <button
-            type="button"
-            onClick={() => setEditing((v) => !v)}
-            className="text-xs font-semibold"
-            style={{ color: "var(--color-brand)" }}
-          >
-            {editing ? "Done" : "Edit"}
-          </button>
+          <div className="flex items-center gap-1">
+            <UndoButton />
+            <button
+              type="button"
+              onClick={() => setEditing((v) => !v)}
+              className="text-xs font-semibold"
+              style={{ color: "var(--color-brand)" }}
+            >
+              {editing ? "Done" : "Edit"}
+            </button>
+          </div>
         </div>
 
         {editing ? (
