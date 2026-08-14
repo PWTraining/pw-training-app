@@ -6,6 +6,7 @@ import { useScrollLock } from "@/lib/scroll-lock";
 const OUT_W = 720;
 const OUT_H = 960; // 3:4, the shape the photo tiles are cut to
 const MAX_SCALE = 4;
+const INSET = 24; // matches the p-6 around the crop window
 
 // Pinch and drag the picture inside a fixed 3:4 window, then keep what's in
 // the window. Same gesture model as the viewer, so it's one thing to learn.
@@ -36,7 +37,11 @@ export function PhotoCropper({
     if (!area) return;
 
     const measure = () => {
-      const { width, height } = area.getBoundingClientRect();
+      const box = area.getBoundingClientRect();
+      // Border box, so the breathing room has to come off both dimensions
+      // before the 3:4 fit, or the box ends up the wrong shape.
+      const width = box.width - INSET * 2;
+      const height = box.height - INSET * 2;
       const h = Math.min(height, (width * OUT_H) / OUT_W);
       setFrameSize({ w: Math.round((h * OUT_W) / OUT_H), h: Math.round(h) });
     };
