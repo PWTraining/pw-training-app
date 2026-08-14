@@ -55,11 +55,11 @@ export function CheckInRow({
       className="py-3"
       style={{ borderBottom: isLast ? "none" : "1px solid var(--color-border)" }}
     >
-      <div className="mb-2 flex items-center gap-2.5">
+      <div className="mb-1 flex items-center gap-1">
         <span className="text-2xl leading-none" aria-hidden>
           {emoji}
         </span>
-        <span className="flex-1 text-sm font-medium" style={{ color: "var(--color-text)" }}>
+        <span className="flex-1 pl-1.5 text-sm font-medium" style={{ color: "var(--color-text)" }}>
           {label}
         </span>
         {why && (
@@ -67,7 +67,7 @@ export function CheckInRow({
             type="button"
             onClick={() => setWhyOpen(true)}
             aria-label={`Why ${label} matters`}
-            className="flex h-6 w-6 shrink-0 items-center justify-center text-sm"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg"
             style={{ color: "var(--color-text-muted)" }}
           >
             ⓘ
@@ -78,13 +78,13 @@ export function CheckInRow({
           disabled={readOnly && !saved}
           onClick={() => (open ? setOpen(false) : startEditing())}
           aria-label={saved ? `Edit your comment on ${label}` : `Leave a comment on ${label}`}
-          className="flex h-6 w-6 shrink-0 items-center justify-center text-sm"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg"
           style={{ color: saved ? "var(--color-brand)" : "var(--color-text-muted)" }}
         >
           💬
         </button>
         <span
-          className="w-10 text-right text-sm font-semibold tabular-nums"
+          className="w-14 shrink-0 text-right text-lg font-bold tabular-nums"
           style={{ color: fill }}
         >
           {value}%

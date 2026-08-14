@@ -55,15 +55,63 @@ async function fetchWeather(latitude: number, longitude: number): Promise<Weathe
   };
 }
 
-// Resolves to the browser's coordinates, or the stored default location if
-// the user declines the permission prompt (or it never resolves).
-function currentCoords(): Promise<{ latitude: number; longitude: number }> {
-  if (!("geolocation" in navigator)) return Promise.resolve(FALLBACK_LOCATION);
+const COORDS_KEY = "pw-weather-coords";
+
+type Coords = { latitude: number; longitude: number };
+
+// The permission prompt should happen once, ever. Whatever the answer, the
+// resulting coordinates are kept and reused on every later visit, so opening
+// the app doesn't re-ask — and a decline is remembered as the fallback
+// location rather than prompting again.
+function rememberedCoords(): Coords | null {
+  try {
+    const stored = window.localStorage.getItem(COORDS_KEY);
+    return stored ? (JSON.parse(stored) as Coords) : null;
+  } catch {
+    return null;
+  }
+}
+
+function remember(coords: Coords) {
+  try {
+    window.localStorage.setItem(COORDS_KEY, JSON.stringify(coords));
+  } catch {
+    // Not being able to remember only costs one extra prompt next time.
+  }
+}
+
+async function currentCoords(): Promise<Coords> {
+  const saved = rememberedCoords();
+  if (saved) return saved;
+
+  if (!("geolocation" in navigator)) {
+    remember(FALLBACK_LOCATION);
+    return FALLBACK_LOCATION;
+  }
+
+  // If the user already refused at the browser level, asking again just
+  // throws the same prompt at them.
+  try {
+    const status = await navigator.permissions?.query({ name: "geolocation" });
+    if (status?.state === "denied") {
+      remember(FALLBACK_LOCATION);
+      return FALLBACK_LOCATION;
+    }
+  } catch {
+    // Permissions API unavailable — fall through and ask directly.
+  }
 
   return new Promise((resolve) => {
     navigator.geolocation.getCurrentPosition(
-      ({ coords }) => resolve({ latitude: coords.latitude, longitude: coords.longitude }),
-      () => resolve(FALLBACK_LOCATION),
+      ({ coords }) => {
+        const next = { latitude: coords.latitude, longitude: coords.longitude };
+        remember(next);
+        resolve(next);
+      },
+      () => {
+        remember(FALLBACK_LOCATION);
+        resolve(FALLBACK_LOCATION);
+      },
       { timeout: 8000 },
     );
   });

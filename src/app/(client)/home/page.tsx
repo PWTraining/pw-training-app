@@ -17,7 +17,7 @@ const HOME_TIMEFRAME_LABELS = { Daily: "Today", Weekly: "This week" };
 
 export default function HomePage() {
   const { habits, todayValue } = useHabits();
-  const [timeframe, setTimeframe] = useState<Timeframe>("Weekly");
+  const [timeframe, setTimeframe] = useState<Timeframe>("Daily");
   const session = useMemo(() => todaysSession(), []);
 
   const adherenceValues = useMemo<Partial<Record<Timeframe, number>>>(() => {
@@ -110,24 +110,42 @@ export default function HomePage() {
         )}
 
         {MOCK_COACH_COMMENT && (
+          /* Deliberately unlike Today's Session: that card is teal, outlined
+             and action-shaped. This is a filled message from a person, in
+             the logo red, so the two never read as the same kind of thing. */
           <section
-            className="flex gap-3 rounded-[var(--radius-lg)] border-2 p-4"
+            className="rounded-[var(--radius-lg)] p-4"
             style={{
-              borderColor: "color-mix(in srgb, var(--color-brand-teal) 55%, var(--color-border))",
-              background: "color-mix(in srgb, var(--color-brand-teal) 8%, var(--color-surface))",
+              background: "color-mix(in srgb, var(--color-brand-red) 12%, var(--color-surface))",
+              boxShadow: "inset 0 0 0 2px var(--color-brand-red)",
             }}
           >
-            <div>
-              <h2
-                className="mb-1 flex items-center gap-1.5 text-base font-bold"
-                style={{ color: "var(--color-brand-teal)" }}
+            <div className="mb-2 flex items-center gap-2.5">
+              <span
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-extrabold"
+                style={{ background: "var(--color-brand-red)", color: "#fff" }}
+                aria-hidden
               >
-                <span aria-hidden>📣</span> Coach&rsquo;s Comment
-              </h2>
-              <p className="text-sm leading-relaxed" style={{ color: "var(--color-text)" }}>
-                {MOCK_COACH_COMMENT}
-              </p>
+                PW
+              </span>
+              <div>
+                <div
+                  className="text-sm font-extrabold uppercase tracking-wide"
+                  style={{ color: "var(--color-brand-red)" }}
+                >
+                  Message from Paul
+                </div>
+                <div className="text-[11px]" style={{ color: "var(--color-text-muted)" }}>
+                  Read this before you log today
+                </div>
+              </div>
             </div>
+            <p
+              className="text-sm font-medium leading-relaxed"
+              style={{ color: "var(--color-text)" }}
+            >
+              {MOCK_COACH_COMMENT}
+            </p>
           </section>
         )}
 

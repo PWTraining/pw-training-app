@@ -100,25 +100,14 @@ export function DayView({ day }: { day: number }) {
             </button>
           </div>
         ) : (
-          <div
-            className="flex items-center gap-3 rounded-[var(--radius-md)] border px-3 py-2.5"
-            style={{
-              borderColor: "color-mix(in srgb, var(--color-brand) 35%, var(--color-border))",
-              background: "color-mix(in srgb, var(--color-brand) 6%, var(--color-surface))",
-            }}
+          <button
+            type="button"
+            onClick={() => setDayClosed(day, true)}
+            className="w-full rounded-[var(--radius-md)] py-2.5 text-sm font-semibold"
+            style={{ background: "var(--color-brand)", color: "var(--color-brand-contrast)" }}
           >
-            <span className="flex-1 text-xs" style={{ color: "var(--color-text)" }}>
-              {day === TODAY_INDEX ? "Today is still open." : "Editing this day."}
-            </span>
-            <button
-              type="button"
-              onClick={() => setDayClosed(day, true)}
-              className="rounded-[var(--radius-sm)] px-3 py-1.5 text-xs font-semibold"
-              style={{ background: "var(--color-brand)", color: "var(--color-brand-contrast)" }}
-            >
-              Save day
-            </button>
-          </div>
+            Save day
+          </button>
         )}
 
         <DayCheckIn day={day} readOnly={closed} />
