@@ -81,8 +81,15 @@ export function HabitEditor({ habits, onDone }: { habits: Habit[]; onDone: () =>
               type="button"
               aria-label={`Drag to reorder ${habit.label}`}
               onPointerDown={(e) => {
-                e.currentTarget.setPointerCapture(e.pointerId);
                 setDraggingId(habit.id);
+                // Capture keeps the drag alive if the finger outruns the row.
+                // Not every pointer can be captured, and failing to is not a
+                // reason to abandon the drag.
+                try {
+                  e.currentTarget.setPointerCapture(e.pointerId);
+                } catch {
+                  // Drag still works, it just stops tracking outside the row.
+                }
               }}
               onPointerUp={() => setDraggingId(null)}
               onPointerCancel={() => setDraggingId(null)}
