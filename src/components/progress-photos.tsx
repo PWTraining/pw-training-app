@@ -402,7 +402,9 @@ function PhotoViewer({
   const zoom = ZOOM_STEPS[step];
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col" style={{ background: "rgba(0,0,0,0.92)" }}>
+    /* Fully opaque: at anything less, the page underneath shows through the
+       bars top and bottom. */
+    <div className="fixed inset-0 z-50 flex flex-col" style={{ background: "#000" }}>
       <div className="flex shrink-0 items-center justify-between px-3 py-2">
         <span className="text-sm font-semibold text-white">
           {POSE_LABEL[photo.pose]} &middot; {prettyDate(photo.takenOn)}
