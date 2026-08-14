@@ -212,13 +212,24 @@ export function CheckInRow({
             className="relative flex max-h-[80vh] w-full max-w-sm flex-col rounded-[var(--radius-lg)] p-5"
             style={{ background: "var(--color-surface)" }}
           >
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-start gap-2.5">
               <span className="text-2xl leading-none" aria-hidden>
                 {emoji}
               </span>
-              <h3 className="text-xl font-bold" style={{ color: "var(--color-text)" }}>
+              <h3 className="flex-1 text-xl font-bold" style={{ color: "var(--color-text)" }}>
                 {label}
               </h3>
+              {/* Two ways out: the cross up here, or the button at the
+                  bottom. Nothing else on screen responds until one is used. */}
+              <button
+                type="button"
+                onClick={() => setWhyOpen(false)}
+                aria-label="Close"
+                className="-mr-2 -mt-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xl leading-none"
+                style={{ color: "var(--color-text-muted)" }}
+              >
+                &times;
+              </button>
             </div>
 
             <div className="mt-4 min-h-0 overflow-y-auto">

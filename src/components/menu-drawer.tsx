@@ -26,15 +26,15 @@ export function MenuButton({ onClick }: { onClick: () => void }) {
       {/* Drawn rather than the ☰ character, which is thin and small for its
           point size. This matches the weight of the back chevron. */}
       <svg
-        width="26"
-        height="26"
+        width="32"
+        height="32"
         viewBox="0 0 24 24"
         stroke="currentColor"
-        strokeWidth="2.5"
+        strokeWidth="2.6"
         strokeLinecap="round"
         aria-hidden
       >
-        <path d="M4 7h16M4 12h16M4 17h16" />
+        <path d="M3.5 7h17M3.5 12h17M3.5 17h17" />
       </svg>
     </button>
   );

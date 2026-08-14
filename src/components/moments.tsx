@@ -61,7 +61,7 @@ export function Moments({ day = TODAY_INDEX }: { day?: number }) {
         </span>
       </div>
       <p className="mb-3 text-xs" style={{ color: "var(--color-text-muted)" }}>
-        Add anything that captures a moment in time...
+        Add anything that feels significant to you right now.
       </p>
 
       {photos.length > 0 && (

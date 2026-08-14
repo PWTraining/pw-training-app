@@ -113,11 +113,19 @@ export function PullToRefresh({ children }: { children: React.ReactNode }) {
         </span>
       </div>
 
+      {/* No transform unless the page is actually being pulled. A transform
+          makes this element the containing block for every fixed-position
+          child, which sends modals to the middle of the whole document
+          instead of the middle of the screen. */}
       <div
-        style={{
-          transform: `translateY(${offset}px)`,
-          transition: active.current ? "none" : "transform 220ms ease",
-        }}
+        style={
+          offset > 0
+            ? {
+                transform: `translateY(${offset}px)`,
+                transition: active.current ? "none" : "transform 220ms ease",
+              }
+            : undefined
+        }
       >
         {children}
       </div>
