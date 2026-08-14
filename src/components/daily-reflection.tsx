@@ -69,6 +69,9 @@ export function DailyReflection({ day = TODAY_INDEX }: { day?: number }) {
             }}
           />
 
+          {/* Clearing the text and saving is how a reflection gets deleted,
+              so an empty draft is only inert when there's nothing saved to
+              clear in the first place. */}
           <div className="mt-2.5 flex gap-2">
             <button
               type="button"
@@ -76,7 +79,7 @@ export function DailyReflection({ day = TODAY_INDEX }: { day?: number }) {
                 setReflection(draft, day);
                 setEditing(false);
               }}
-              disabled={!draft.trim()}
+              disabled={!draft.trim() && !saved}
               className="rounded-[var(--radius-sm)] px-4 py-2 text-sm font-medium disabled:opacity-40"
               style={{ background: "var(--color-brand)", color: "var(--color-brand-contrast)" }}
             >
