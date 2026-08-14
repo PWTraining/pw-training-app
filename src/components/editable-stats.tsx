@@ -51,7 +51,7 @@ export function EditableStats({
   function add() {
     setStats((prev) => [
       ...prev,
-      { id: `row-${Date.now()}`, label: "New entry", value: "—" },
+      { id: `row-${Date.now()}`, label: "New entry", value: "-" },
     ]);
   }
 

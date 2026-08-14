@@ -59,7 +59,7 @@ export function Moments({ day = TODAY_INDEX }: { day?: number }) {
         </span>
       </div>
       <p className="mb-3 text-xs" style={{ color: "var(--color-text-muted)" }}>
-        A view, a quote, a selfie — whatever today looked like.
+        A view, a quote, a selfie. Whatever today looked like.
       </p>
 
       {photos.length > 0 && (

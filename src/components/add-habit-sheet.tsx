@@ -166,7 +166,7 @@ export function AddHabitSheet({ open, onClose }: { open: boolean; onClose: () =>
                 className="mb-1.5 text-xs font-medium"
                 style={{ color: "var(--color-text-muted)" }}
               >
-                Emoji — type to use your keyboard&rsquo;s picker, or pick one below
+                Emoji. Type to use your keyboard&rsquo;s picker, or pick one below
               </div>
               <input
                 type="text"

@@ -372,7 +372,7 @@ export default function TrainPage() {
               ☯️
             </span>
             <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
-              Rest day — nothing programmed.
+              Rest day. Nothing programmed.
             </p>
           </div>
         ) : null}

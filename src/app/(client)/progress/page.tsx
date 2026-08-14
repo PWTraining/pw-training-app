@@ -127,7 +127,7 @@ export default function ProgressPage() {
 
         <SectionDivider label="Mind, Body & Spirit" />
         <p className="-mt-3 px-1 text-xs italic" style={{ color: "var(--color-text-muted)" }}>
-          How you&rsquo;re feeling, not a task to tick off — logged on Home.
+          How you&rsquo;re feeling, not a task to tick off. Logged on Home.
         </p>
 
         <section className="flex flex-col gap-2">
