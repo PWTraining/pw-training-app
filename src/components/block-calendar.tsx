@@ -31,7 +31,10 @@ export function BlockCalendar() {
           const logged = !isFuture && isDayLogged(i);
 
           const cell = (
+            // Date numbers resolve in the viewer's timezone, which the server
+            // doesn't know, so let the client's value win over the prerender.
             <div
+              suppressHydrationWarning
               className="flex aspect-square w-full flex-col items-center justify-center rounded-[var(--radius-sm)] border text-[11px] font-medium tabular-nums"
               style={{
                 borderColor: isToday ? "var(--color-brand)" : "var(--color-border)",

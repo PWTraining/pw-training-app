@@ -45,7 +45,13 @@ export function DayView({ day }: { day: number }) {
         </Link>
 
         <div className="flex-1 text-center">
-          <div className="text-base font-bold" style={{ color: "var(--color-text)" }}>
+          {/* Dates resolve in the viewer's timezone, which the server doesn't
+              know, so let the client's value win over the prerendered one. */}
+          <div
+            className="text-base font-bold"
+            style={{ color: "var(--color-text)" }}
+            suppressHydrationWarning
+          >
             {formatDay(day)}
           </div>
           <div className="text-[11px]" style={{ color: "var(--color-text-muted)" }}>
@@ -88,7 +94,7 @@ export function DayView({ day }: { day: number }) {
             }}
           >
             Filling in{" "}
-            <b style={{ color: "var(--color-text)" }}>
+            <b style={{ color: "var(--color-text)" }} suppressHydrationWarning>
               {dateForDay(day).toLocaleDateString(undefined, {
                 weekday: "long",
                 day: "numeric",
