@@ -61,14 +61,14 @@ export function StepsAndSleep() {
                 color: "var(--color-text)",
               }}
             />
-            {field.unit && (
-              <span
-                className="w-7 text-left text-xs font-semibold"
-                style={{ color: "var(--color-text-muted)" }}
-              >
-                {field.unit}
-              </span>
-            )}
+            {/* Always rendered, so the two input boxes line up whether or not
+                the row carries a unit. */}
+            <span
+              className="w-7 shrink-0 text-left text-xs font-semibold"
+              style={{ color: "var(--color-text-muted)" }}
+            >
+              {field.unit}
+            </span>
           </div>
         ))}
       </div>

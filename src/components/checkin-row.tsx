@@ -44,6 +44,7 @@ export function CheckInRow({
   const [draft, setDraft] = useState(saved);
 
   const slider = useRef<HTMLInputElement>(null);
+  const dragging = useRef(false);
   const fill = adherenceColor(value);
 
   // Touching the track anywhere jumps the value to that spot and keeps
@@ -108,12 +109,28 @@ export function CheckInRow({
         onChange={(e) => onChange(Number(e.target.value))}
         onPointerDown={(e) => {
           if (readOnly) return;
-          e.currentTarget.setPointerCapture(e.pointerId);
+          dragging.current = true;
+          // Capture keeps the events coming even if the finger wanders off
+          // the track, but the drag flag is what actually gates the move.
+          try {
+            e.currentTarget.setPointerCapture(e.pointerId);
+          } catch {
+            // Not supported here; the flag alone still works.
+          }
           trackPointer(e);
         }}
         onPointerMove={(e) => {
-          if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
+          if (!dragging.current) return;
           trackPointer(e);
+        }}
+        onPointerUp={() => {
+          dragging.current = false;
+        }}
+        onPointerCancel={() => {
+          dragging.current = false;
+        }}
+        onLostPointerCapture={() => {
+          dragging.current = false;
         }}
         disabled={readOnly}
         aria-label={label}
