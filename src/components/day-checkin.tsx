@@ -79,6 +79,7 @@ export function DayCheckIn({
               isLast={i === activeHabits.length - 1}
               day={day}
               readOnly={readOnly}
+              why={habit.why}
             />
           ))
         )}

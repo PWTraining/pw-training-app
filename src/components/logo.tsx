@@ -4,11 +4,10 @@ import Image from "next/image";
 // the header height. Source art is square, so width tracks height 1:1.
 const LOGO_SIZE = 56;
 
-// The colour mark reads fine on the light surface; on the dark surface it
-// needs the white variant. Drop `public/pw-logo-white.png` in and flip
-// HAS_DARK_VARIANT — the two images then swap on `prefers-color-scheme`
-// with no JavaScript and no flash.
-const HAS_DARK_VARIANT = false;
+// The colour mark reads fine on the light surface; the dark surface takes
+// the white variant. Both are rendered and swapped by `prefers-color-scheme`
+// so there's no JavaScript involved and no flash on load.
+const HAS_DARK_VARIANT = true;
 
 export function Logo() {
   return (

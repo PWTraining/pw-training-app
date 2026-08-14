@@ -13,6 +13,7 @@ export function CheckInRow({
   isLast,
   day,
   readOnly = false,
+  why,
 }: {
   id: string;
   emoji: string;
@@ -25,12 +26,16 @@ export function CheckInRow({
   day?: number;
   // A saved day shows its values but doesn't take new input until reopened.
   readOnly?: boolean;
+  // The client's reason for tracking this habit, surfaced without leaving
+  // the check-in. Absent for Mind/Body/Spirit, which aren't habits.
+  why?: string;
 }) {
   const { commentFor, setComment } = useHabits();
   const targetDay = day ?? TODAY_INDEX;
   const saved = commentFor(id, targetDay);
 
   const [open, setOpen] = useState(false);
+  const [whyOpen, setWhyOpen] = useState(false);
   const [draft, setDraft] = useState(saved);
 
   const fill = adherenceColor(value);
@@ -57,6 +62,17 @@ export function CheckInRow({
         <span className="flex-1 text-sm font-medium" style={{ color: "var(--color-text)" }}>
           {label}
         </span>
+        {why && (
+          <button
+            type="button"
+            onClick={() => setWhyOpen(true)}
+            aria-label={`Why ${label} matters`}
+            className="flex h-6 w-6 shrink-0 items-center justify-center text-sm"
+            style={{ color: "var(--color-text-muted)" }}
+          >
+            ⓘ
+          </button>
+        )}
         <button
           type="button"
           disabled={readOnly && !saved}
@@ -129,6 +145,47 @@ export function CheckInRow({
             Edit
           </span>
         </button>
+      )}
+
+      {whyOpen && why && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center"
+          style={{ background: "rgba(0,0,0,0.6)" }}
+        >
+          <button
+            type="button"
+            aria-label="Close"
+            className="absolute inset-0"
+            onClick={() => setWhyOpen(false)}
+          />
+          <div
+            className="relative w-full max-w-sm rounded-[var(--radius-lg)] p-4"
+            style={{ background: "var(--color-surface)" }}
+          >
+            <div className="mb-2 flex items-center gap-2">
+              <span className="text-xl leading-none" aria-hidden>
+                {emoji}
+              </span>
+              <h3 className="text-sm font-bold" style={{ color: "var(--color-text)" }}>
+                Why {label}
+              </h3>
+            </div>
+            <p
+              className="text-xs leading-relaxed"
+              style={{ color: "var(--color-text-muted)" }}
+            >
+              {why}
+            </p>
+            <button
+              type="button"
+              onClick={() => setWhyOpen(false)}
+              className="mt-3 w-full rounded-[var(--radius-sm)] py-2 text-sm font-semibold"
+              style={{ background: "var(--color-brand)", color: "var(--color-brand-contrast)" }}
+            >
+              Got it
+            </button>
+          </div>
+        </div>
       )}
 
       {open && !readOnly && (
