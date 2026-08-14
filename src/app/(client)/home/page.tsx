@@ -71,6 +71,29 @@ export default function HomePage() {
     ];
   }, [habits, todayValue, timeframe, trainingToday]);
 
+  // Every line behind those three bars, so the breakdown can name exactly
+  // what's short.
+  const adherenceItems = useMemo(() => {
+    const pctFor = (id: string) =>
+      timeframe === "Daily" ? todayValue(id) : Math.round(weeklyPct(id, todayValue(id)));
+
+    return [
+      ...habits
+        .filter((h) => !h.archived)
+        .map((h) => ({ label: h.label, pct: pctFor(h.id), group: "Habits" })),
+      ...MOOD_ENTRIES.map((m) => ({
+        label: m.label,
+        pct: pctFor(m.id),
+        group: "Mind Body Spirit",
+      })),
+      {
+        label: session ? `Today's session: ${session}` : "Rest day",
+        pct: timeframe === "Daily" ? trainingToday : MOCK_TRAINING_PCT,
+        group: "Training",
+      },
+    ];
+  }, [habits, todayValue, timeframe, trainingToday, session]);
+
 
   return (
     <div>
@@ -100,6 +123,7 @@ export default function HomePage() {
           timeframes={HOME_TIMEFRAMES}
           labels={HOME_TIMEFRAME_LABELS}
           parts={adherenceParts}
+          items={adherenceItems}
         />
 
         {/* Always here, rest day included, and always the same tap through to

@@ -80,13 +80,22 @@ export default function ProgressPage() {
       <TopBar />
 
       <div className="flex flex-col gap-4 px-4 pt-4 pb-6">
-        <ProgramAdherence
-          values={adherenceValues}
-          timeframe={timeframe}
-          onTimeframeChange={chooseTimeframe}
-          timeframes={LIST_TIMEFRAMES}
-          labels={LIST_TIMEFRAME_LABELS}
-        />
+        {/* Pinned under the top bar so the timeframe stays reachable while
+            you scroll through the calendar and the habits below it. */}
+        <div
+          className="sticky z-20 -mx-4 px-4 pb-2 pt-1"
+          /* 69px is the top bar: the 56px logo plus its 6px padding each
+             side and the hairline border. */
+          style={{ top: "69px", background: "var(--color-bg)" }}
+        >
+          <ProgramAdherence
+            values={adherenceValues}
+            timeframe={timeframe}
+            onTimeframeChange={chooseTimeframe}
+            timeframes={LIST_TIMEFRAMES}
+            labels={LIST_TIMEFRAME_LABELS}
+          />
+        </div>
 
         <MonthCalendar />
 

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { TopBar } from "@/components/top-bar";
+import { ProfileAvatar } from "@/components/profile-avatar";
 import { MOCK_PROFILE, ageFrom, formatBirthday } from "@/lib/portal-mocks";
 
 // Everything reachable from the profile. Each one is its own rabbit hole —
@@ -29,22 +30,7 @@ export default function ProfilePage() {
 
       <div className="flex flex-col gap-5 px-4 pt-6 pb-6">
         <section className="flex flex-col items-center gap-3 text-center">
-          {/* Initials stand in until a real photo exists — swap the inner
-              span for an <Image> and the green ring stays exactly as it is. */}
-          <div
-            className="flex h-24 w-24 items-center justify-center rounded-full text-2xl font-bold"
-            /* Close-friends ring: fluoro green with a soft bloom outside it,
-               so opening the profile feels like being let into something. */
-            style={{
-              background: "color-mix(in srgb, var(--color-brand) 10%, var(--color-surface))",
-              color: "var(--color-brand)",
-              boxShadow:
-                "0 0 0 3px var(--color-surface), 0 0 0 7px #39ff6a, 0 0 14px 4px rgba(57,255,106,0.55)",
-            }}
-            aria-hidden
-          >
-            {initials(MOCK_PROFILE.name)}
-          </div>
+          <ProfileAvatar initials={initials(MOCK_PROFILE.name)} />
 
           <div>
             <h1 className="text-xl font-bold" style={{ color: "var(--color-text)" }}>

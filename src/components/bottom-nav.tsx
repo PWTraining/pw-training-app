@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+// All five are emoji at one size so they carry the same weight. The old ⌂ was
+// a thin text glyph and the barbell was missing its colour selector, which is
+// why Home and Train looked lighter than the rest.
 const TABS = [
-  { href: "/home", label: "Home", icon: "⌂" },
-  { href: "/train", label: "Train", icon: "🏋" },
+  { href: "/home", label: "Home", icon: "🏠" },
+  { href: "/train", label: "Train", icon: "🏋️" },
   // Route stays /progress so existing links keep working; the tab is named
   // for what's actually on it.
   { href: "/progress", label: "Habits", icon: "✓" },
@@ -39,7 +42,7 @@ export function BottomNav() {
                 style={{ color: "var(--color-success)" }}
               >
                 <span
-                  className="-mt-4 flex h-14 w-14 items-center justify-center rounded-full text-2xl font-bold shadow-lg"
+                  className="-mt-3 flex h-12 w-12 items-center justify-center rounded-full text-xl font-bold shadow-lg"
                   style={{
                     background: "var(--color-success)",
                     color: "#fff",
@@ -68,7 +71,7 @@ export function BottomNav() {
               {/* No unread marker on the nav: it reads as an alarm sitting
                   on screen all day. The count lives on the chat rows. */}
               <span
-                className="flex h-7 w-11 items-center justify-center rounded-full text-lg leading-none transition-colors"
+                className="flex h-8 w-12 items-center justify-center rounded-full text-[22px] leading-none transition-colors"
                 style={{
                   background: active
                     ? "color-mix(in srgb, var(--color-brand) 14%, transparent)"

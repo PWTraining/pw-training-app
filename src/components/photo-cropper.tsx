@@ -1,65 +1,75 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useScrollLock } from "@/lib/scroll-lock";
 
-const OUT_W = 720;
-const OUT_H = 960; // 3:4, the shape the photo tiles are cut to
-const MAX_SCALE = 4;
-const INSET = 24; // matches the p-6 around the crop window
+const MAX_SCALE = 6;
 
-// Pinch and drag the picture inside a fixed 3:4 window, then keep what's in
-// the window. Same gesture model as the viewer, so it's one thing to learn.
+// Pinch and drag the picture inside the crop window, then keep what's in the
+// window. Same gesture model as the photo viewer, so it's one thing to learn.
 export function PhotoCropper({
   src,
+  square = false,
   onCancel,
   onDone,
 }: {
   src: string;
+  // Profile pictures crop square; progress photos crop 3:4.
+  square?: boolean;
   onCancel: () => void;
   onDone: (croppedSrc: string) => void;
 }) {
   useScrollLock(true);
 
+  const outW = square ? 720 : 720;
+  const outH = square ? 720 : 960;
+
   const frame = useRef<HTMLDivElement>(null);
   const frameArea = useRef<HTMLDivElement>(null);
   const image = useRef<HTMLImageElement>(null);
+
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const [ready, setReady] = useState(false);
+  const [natural, setNatural] = useState<{ w: number; h: number } | null>(null);
   const [busy, setBusy] = useState(false);
   const [frameSize, setFrameSize] = useState({ w: 0, h: 0 });
-
-  // The largest 3:4 box that fits the space available, recalculated if the
-  // window turns or resizes.
-  useEffect(() => {
-    const area = frameArea.current;
-    if (!area) return;
-
-    const measure = () => {
-      const box = area.getBoundingClientRect();
-      // Border box, so the breathing room has to come off both dimensions
-      // before the 3:4 fit, or the box ends up the wrong shape.
-      const width = box.width - INSET * 2;
-      const height = box.height - INSET * 2;
-      const h = Math.min(height, (width * OUT_H) / OUT_W);
-      setFrameSize({ w: Math.round((h * OUT_W) / OUT_H), h: Math.round(h) });
-    };
-
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(area);
-    return () => observer.disconnect();
-  }, []);
 
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const start = useRef({ dist: 0, scale: 1, mid: { x: 0, y: 0 }, offset: { x: 0, y: 0 } });
 
   useEffect(() => {
     const img = new Image();
-    img.onload = () => setReady(true);
+    img.onload = () => setNatural({ w: img.naturalWidth, h: img.naturalHeight });
     img.src = src;
   }, [src]);
+
+  // The crop window takes the whole area it's given. It used to sit inside a
+  // margin, which made it far smaller than the screen for no good reason.
+  const measure = useCallback(() => {
+    const area = frameArea.current;
+    if (!area) return;
+    const box = area.getBoundingClientRect();
+    const h = Math.min(box.height, (box.width * outH) / outW);
+    setFrameSize({ w: Math.round((h * outW) / outH), h: Math.round(h) });
+  }, [outW, outH]);
+
+  useEffect(() => {
+    measure();
+    const area = frameArea.current;
+    if (!area) return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(area);
+    return () => observer.disconnect();
+  }, [measure]);
+
+  // The whole picture is visible when the cropper opens. Nothing is cut off
+  // until the client chooses to zoom in.
+  const baseWidth = (() => {
+    if (!natural || !frameSize.w) return 0;
+    const fitByWidth = frameSize.w / natural.w;
+    const fitByHeight = frameSize.h / natural.h;
+    return natural.w * Math.min(fitByWidth, fitByHeight);
+  })();
 
   function centreAndSpread() {
     const points = [...pointers.current.values()];
@@ -102,8 +112,8 @@ export function PhotoCropper({
     if (pointers.current.size > 0) begin();
   }
 
-  // What's drawn on screen and what's written to the canvas have to agree, so
-  // the crop is worked out from the rendered boxes rather than guessed at.
+  // What's on screen and what's written to the canvas have to agree, so the
+  // crop is measured from the rendered boxes rather than recalculated.
   async function apply() {
     const frameBox = frame.current?.getBoundingClientRect();
     const imageBox = image.current?.getBoundingClientRect();
@@ -118,21 +128,29 @@ export function PhotoCropper({
         img.src = src;
       });
 
-      // Natural pixels per rendered pixel, then the frame's position within
-      // the rendered image, converted back to natural pixels.
       const ratio = img.naturalWidth / imageBox.width;
-      const sx = (frameBox.left - imageBox.left) * ratio;
-      const sy = (frameBox.top - imageBox.top) * ratio;
-      const sw = frameBox.width * ratio;
-      const sh = frameBox.height * ratio;
-
       const canvas = document.createElement("canvas");
-      canvas.width = OUT_W;
-      canvas.height = OUT_H;
+      canvas.width = outW;
+      canvas.height = outH;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, OUT_W, OUT_H);
-      onDone(canvas.toDataURL("image/jpeg", 0.72));
+
+      // Anything the picture doesn't cover stays black rather than
+      // transparent, so the saved file has no see-through edges.
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, outW, outH);
+      ctx.drawImage(
+        img,
+        (frameBox.left - imageBox.left) * ratio,
+        (frameBox.top - imageBox.top) * ratio,
+        frameBox.width * ratio,
+        frameBox.height * ratio,
+        0,
+        0,
+        outW,
+        outH,
+      );
+      onDone(canvas.toDataURL("image/jpeg", 0.75));
     } finally {
       setBusy(false);
     }
@@ -140,11 +158,11 @@ export function PhotoCropper({
 
   return (
     <div className="fixed inset-0 z-[55] flex flex-col" style={{ background: "#000" }}>
-      <div className="flex shrink-0 items-center justify-between px-3 py-2">
+      <div className="flex shrink-0 items-center justify-between px-2 py-2">
         <button
           type="button"
           onClick={onCancel}
-          className="px-2 py-2 text-sm font-semibold text-white"
+          className="px-3 py-2 text-sm font-semibold text-white"
         >
           Cancel
         </button>
@@ -152,8 +170,8 @@ export function PhotoCropper({
         <button
           type="button"
           onClick={apply}
-          disabled={busy || !ready}
-          className="px-2 py-2 text-sm font-bold disabled:opacity-50"
+          disabled={busy || !natural}
+          className="px-3 py-2 text-sm font-bold disabled:opacity-50"
           style={{ color: "var(--color-brand-lime)" }}
         >
           {busy ? "Saving…" : "Done"}
@@ -168,33 +186,28 @@ export function PhotoCropper({
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          ref={image}
-          src={src}
-          alt="Photo being cropped"
-          draggable={false}
-          className="absolute left-1/2 top-1/2 max-h-full max-w-full select-none"
-          style={{
-            transform: `translate(-50%, -50%) translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
-          }}
-        />
+        {baseWidth > 0 && (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            ref={image}
+            src={src}
+            alt="Photo being cropped"
+            draggable={false}
+            className="absolute left-1/2 top-1/2 max-w-none select-none"
+            style={{
+              width: baseWidth,
+              transform: `translate(-50%, -50%) translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
+            }}
+          />
+        )}
 
-        {/* The window itself: everything outside it is dimmed by the ring
-            shadow, so what you keep is obvious without masking the image. */}
-        {/* Measured rather than left to CSS: aspect-ratio plus a max in one
-            direction keeps the other dimension, so the box comes out the
-            wrong shape. These two numbers are always exactly 3:4. */}
-        <div
-          ref={frameArea}
-          className="pointer-events-none absolute inset-0 flex items-center justify-center p-6"
-        >
+        <div ref={frameArea} className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div
             ref={frame}
             style={{
               width: frameSize.w,
               height: frameSize.h,
-              boxShadow: "0 0 0 9999px rgba(0,0,0,0.55)",
+              boxShadow: "0 0 0 9999px rgba(0,0,0,0.6)",
               outline: "2px solid rgba(255,255,255,0.9)",
             }}
           />

@@ -61,18 +61,21 @@ export function formatBirthday(isoBirthday: string) {
 
 // Seeds for the editable Profile sub-pages. Once edited, the client's own
 // values live in localStorage and these are only the starting point.
-// Units are fixed per row so the client only ever types a number, and a goal
-// is picked rather than written.
+// The full set of measurements the programme uses, both sides where there are
+// two. Clients keep the ones they want and park the rest; nothing is invented
+// on the fly, so every client's numbers mean the same thing.
 export const DEFAULT_METRICS = [
-  { id: "weight", label: "Weight", value: "88.0", unit: "kg" },
   { id: "height", label: "Height", value: "183", unit: "cm" },
-  { id: "goal", label: "Goal", value: "Cut", options: ["Maintenance", "Cut", "Build"] },
+  { id: "weight", label: "Weight", value: "88.0", unit: "kg" },
   { id: "bodyfat", label: "Body fat", value: "18", unit: "%" },
+  { id: "shoulders", label: "Shoulders", value: "122", unit: "cm" },
   { id: "chest", label: "Chest", value: "104", unit: "cm" },
-  { id: "arms", label: "Arms", value: "38", unit: "cm" },
   { id: "waist", label: "Waist", value: "84", unit: "cm" },
   { id: "hips", label: "Hips", value: "98", unit: "cm" },
-  { id: "thighs", label: "Thighs", value: "58", unit: "cm" },
+  { id: "arm-left", label: "Left arm", value: "38", unit: "cm" },
+  { id: "arm-right", label: "Right arm", value: "38", unit: "cm" },
+  { id: "thigh-left", label: "Left thigh", value: "58", unit: "cm" },
+  { id: "thigh-right", label: "Right thigh", value: "58", unit: "cm" },
 ];
 
 export const DEFAULT_TESTING = [

@@ -513,18 +513,20 @@ function PhotoViewer({
         <span className="text-sm font-semibold text-white">
           {POSE_LABEL[photo.pose]} &middot; {prettyDate(photo.takenOn)}
         </span>
-        <div className="flex items-center gap-1">
+        {/* Spaced well apart: Crop and Delete sitting side by side was asking
+            for the wrong one to be hit. */}
+        <div className="flex items-center gap-5">
           <button
             type="button"
             onClick={onCrop}
-            className="px-2 py-1 text-sm font-semibold text-white"
+            className="px-3 py-2 text-sm font-semibold text-white"
           >
             Crop
           </button>
           <button
             type="button"
             onClick={() => setConfirmRemove(true)}
-            className="px-2 py-1 text-sm font-semibold"
+            className="px-3 py-2 text-sm font-semibold"
             style={{ color: "#ff6b6b" }}
           >
             Delete
