@@ -1,13 +1,14 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { DEFAULT_HABITS, MOCK_COMMENTS, TODAY_INDEX, type Habit } from "./habits";
+import { DEFAULT_HABITS, MOCK_BLOCK, MOCK_COMMENTS, TODAY_INDEX, type Habit } from "./habits";
 
 const HABITS_KEY = "pw-habits";
 const HISTORY_KEY = "pw-habit-history";
 const COMMENTS_KEY = "pw-habit-comments";
 const DAY_COMMENT_KEY = "pw-day-comment";
 const TODAY_VALUES_KEY = "pw-today-values";
+const DAY_VALUES_KEY = "pw-day-values";
 
 export type HabitHistoryEntry = {
   action: "added" | "archived" | "restored" | "renamed";
@@ -19,6 +20,11 @@ export type StoredComment = { day: number; text: string; at: string };
 
 type CommentsByHabit = Record<string, StoredComment[]>;
 type TodayValues = Record<string, number>;
+
+// Values the client has actually logged, keyed habit -> day index. Only days
+// they've touched appear here; anything absent falls back to the mock block
+// history, so this is an override layer rather than a replacement for it.
+type DayValues = Record<string, Record<number, number>>;
 
 const DEFAULT_COMMENTS: CommentsByHabit = Object.fromEntries(
   Object.entries(MOCK_COMMENTS).map(([id, comments]) => [
@@ -40,6 +46,10 @@ const DEFAULT_TODAY_VALUES: TodayValues = {
   cardio: 60,
 };
 
+const DEFAULT_DAY_VALUES: DayValues = Object.fromEntries(
+  Object.entries(DEFAULT_TODAY_VALUES).map(([id, value]) => [id, { [TODAY_INDEX]: value }]),
+);
+
 type HabitsContextValue = {
   habits: Habit[];
   addHabit: (habit: Habit) => void;
@@ -51,11 +61,14 @@ type HabitsContextValue = {
   history: HabitHistoryEntry[];
   commentsFor: (habitId: string) => StoredComment[];
   hasComments: (habitId: string) => boolean;
-  addComment: (habitId: string, text: string) => void;
+  addComment: (habitId: string, text: string, day?: number) => void;
   dayComment: string;
   setDayComment: (text: string) => void;
   todayValue: (habitId: string) => number;
   setTodayValue: (habitId: string, value: number) => void;
+  dayValue: (habitId: string, day: number) => number;
+  setDayValue: (habitId: string, day: number, value: number) => void;
+  isDayLogged: (day: number) => boolean;
 };
 
 const HabitsContext = createContext<HabitsContextValue | null>(null);
@@ -69,12 +82,27 @@ function loadJSON<T>(key: string, fallback: T): T {
   }
 }
 
+// A day the client has logged wins; otherwise fall back to the mock block
+// history so untouched days keep reading as they always have.
+function readDayValue(dayValues: DayValues, habitId: string, day: number) {
+  return dayValues[habitId]?.[day] ?? MOCK_BLOCK[habitId]?.[day] ?? 0;
+}
+
+function writeDayValue(
+  setDayValues: React.Dispatch<React.SetStateAction<DayValues>>,
+  habitId: string,
+  day: number,
+  value: number,
+) {
+  setDayValues((prev) => ({ ...prev, [habitId]: { ...(prev[habitId] ?? {}), [day]: value } }));
+}
+
 export function HabitsProvider({ children }: { children: React.ReactNode }) {
   const [habits, setHabits] = useState<Habit[]>(DEFAULT_HABITS);
   const [history, setHistory] = useState<HabitHistoryEntry[]>([]);
   const [comments, setComments] = useState<CommentsByHabit>(DEFAULT_COMMENTS);
   const [dayComment, setDayComment] = useState("");
-  const [todayValues, setTodayValues] = useState<TodayValues>(DEFAULT_TODAY_VALUES);
+  const [dayValues, setDayValues] = useState<DayValues>(DEFAULT_DAY_VALUES);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -82,16 +110,26 @@ export function HabitsProvider({ children }: { children: React.ReactNode }) {
     const storedHistory = loadJSON(HISTORY_KEY, [] as HabitHistoryEntry[]);
     const storedComments = loadJSON(COMMENTS_KEY, DEFAULT_COMMENTS);
     const storedDayComment = loadJSON(DAY_COMMENT_KEY, "");
-    const storedTodayValues = {
-      ...DEFAULT_TODAY_VALUES,
-      ...loadJSON(TODAY_VALUES_KEY, DEFAULT_TODAY_VALUES),
-    };
+    // Older builds stored a single value per habit under TODAY_VALUES_KEY.
+    // Fold those into day-keyed storage at today's index so an existing
+    // client doesn't lose the day they'd already logged.
+    const legacyToday: TodayValues = loadJSON(TODAY_VALUES_KEY, DEFAULT_TODAY_VALUES);
+    const storedDayValues = loadJSON(DAY_VALUES_KEY, null as DayValues | null);
+    const mergedDayValues =
+      storedDayValues ??
+      Object.fromEntries(
+        Object.entries({ ...DEFAULT_TODAY_VALUES, ...legacyToday }).map(([id, value]) => [
+          id,
+          { [TODAY_INDEX]: value },
+        ]),
+      );
+
     Promise.resolve().then(() => {
       setHabits(storedHabits);
       setHistory(storedHistory);
       setComments(storedComments);
       setDayComment(storedDayComment);
-      setTodayValues(storedTodayValues);
+      setDayValues(mergedDayValues);
       setHydrated(true);
     });
   }, []);
@@ -118,8 +156,8 @@ export function HabitsProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!hydrated) return;
-    window.localStorage.setItem(TODAY_VALUES_KEY, JSON.stringify(todayValues));
-  }, [todayValues, hydrated]);
+    window.localStorage.setItem(DAY_VALUES_KEY, JSON.stringify(dayValues));
+  }, [dayValues, hydrated]);
 
   const value = useMemo<HabitsContextValue>(
     () => ({
@@ -178,21 +216,21 @@ export function HabitsProvider({ children }: { children: React.ReactNode }) {
       history,
       commentsFor: (habitId) => comments[habitId] ?? [],
       hasComments: (habitId) => (comments[habitId]?.length ?? 0) > 0,
-      addComment: (habitId, text) => {
+      addComment: (habitId, text, day = TODAY_INDEX) => {
         setComments((prev) => ({
           ...prev,
-          [habitId]: [
-            ...(prev[habitId] ?? []),
-            { day: TODAY_INDEX, text, at: new Date().toISOString() },
-          ],
+          [habitId]: [...(prev[habitId] ?? []), { day, text, at: new Date().toISOString() }],
         }));
       },
       dayComment,
       setDayComment,
-      todayValue: (habitId) => todayValues[habitId] ?? 0,
-      setTodayValue: (habitId, val) => setTodayValues((prev) => ({ ...prev, [habitId]: val })),
+      todayValue: (habitId) => readDayValue(dayValues, habitId, TODAY_INDEX),
+      setTodayValue: (habitId, val) => writeDayValue(setDayValues, habitId, TODAY_INDEX, val),
+      dayValue: (habitId, day) => readDayValue(dayValues, habitId, day),
+      setDayValue: (habitId, day, val) => writeDayValue(setDayValues, habitId, day, val),
+      isDayLogged: (day) => Object.values(dayValues).some((byDay) => byDay[day] !== undefined),
     }),
-    [habits, history, comments, dayComment, todayValues],
+    [habits, history, comments, dayComment, dayValues],
   );
 
   return <HabitsContext.Provider value={value}>{children}</HabitsContext.Provider>;

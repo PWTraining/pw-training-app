@@ -207,6 +207,9 @@ export function HabitDetail({ habitId }: { habitId: string }) {
         >
           <AdherenceRing pct={blockPct} />
           <div className="flex-1">
+            <div className="text-sm font-bold" style={{ color: "var(--color-text)" }}>
+              {habit.label}
+            </div>
             <div className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>
               Block adherence
             </div>
@@ -265,7 +268,7 @@ export function HabitDetail({ habitId }: { habitId: string }) {
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && submitComment()}
-              placeholder="Add a comment about this (optional)"
+              placeholder="Leave a comment"
               className="flex-1 rounded-[var(--radius-sm)] border px-3 py-2 text-sm outline-none"
               style={{
                 borderColor: "var(--color-border)",

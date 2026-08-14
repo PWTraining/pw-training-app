@@ -69,6 +69,25 @@ export const MOCK_BLOCK: Record<string, number[]> = {
   spirit: [80, 70, 90, 60, 80, 70, 50, 90, 80, 70],
 };
 
+// Calendar date for a day index in the current block, used only for
+// labelling the day view — nothing in the adherence maths is date-aware.
+export function dateForDay(dayIndex: number) {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  date.setDate(date.getDate() - (TODAY_INDEX - dayIndex));
+  return date;
+}
+
+export function formatDay(dayIndex: number) {
+  if (dayIndex === TODAY_INDEX) return "Today";
+  if (dayIndex === TODAY_INDEX - 1) return "Yesterday";
+  return dateForDay(dayIndex).toLocaleDateString(undefined, {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+}
+
 // Mock comments a client has left against specific days of a habit's block —
 // e.g. explaining a partial or missed day. Coaches read these at check-in.
 export type HabitComment = { day: number; text: string };

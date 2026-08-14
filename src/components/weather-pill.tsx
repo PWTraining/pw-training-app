@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { FALLBACK_LOCATION } from "@/lib/weather-location";
 
 const WEATHER_CODES: Record<number, { emoji: string; label: string }> = {
-  0: { emoji: "☀️", label: "Clear" },
-  1: { emoji: "🌤️", label: "Mostly clear" },
-  2: { emoji: "⛅", label: "Partly cloudy" },
+  0: { emoji: "☀️", label: "Sunny" },
+  1: { emoji: "🌤️", label: "Mostly sunny" },
+  2: { emoji: "⛅", label: "Sunny with a bit of cloud" },
   3: { emoji: "☁️", label: "Overcast" },
   45: { emoji: "🌫️", label: "Foggy" },
   48: { emoji: "🌫️", label: "Foggy" },
@@ -27,142 +28,69 @@ const WEATHER_CODES: Record<number, { emoji: string; label: string }> = {
 };
 
 function describeWeather(code: number) {
-  return WEATHER_CODES[code] ?? { emoji: "🌡️", label: "" };
+  return WEATHER_CODES[code] ?? { emoji: "🌡️", label: "Current conditions" };
 }
 
-type WeatherState =
-  | { status: "loading" }
-  | { status: "denied" }
-  | { status: "unavailable" }
-  | { status: "ready"; tempC: number; emoji: string; label: string; place: string };
+type Weather = { tempC: number; emoji: string; label: string };
 
-export function WeatherPill() {
-  const [state, setState] = useState<WeatherState>({ status: "loading" });
-  const [expanded, setExpanded] = useState(false);
+// Open-Meteo is keyless, so this runs straight from the browser with no
+// server route or API key to manage.
+async function fetchWeather(latitude: number, longitude: number): Promise<Weather> {
+  const res = await fetch(
+    `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&timezone=auto`,
+  );
+  const data = await res.json();
+  return {
+    tempC: Math.round(data.current.temperature_2m),
+    ...describeWeather(data.current.weather_code),
+  };
+}
 
-  const runFetch = useCallback(() => {
-    if (!("geolocation" in navigator)) {
-      Promise.resolve().then(() => setState({ status: "unavailable" }));
-      return;
-    }
+// Resolves to the browser's coordinates, or the stored default location if
+// the user declines the permission prompt (or it never resolves).
+function currentCoords(): Promise<{ latitude: number; longitude: number }> {
+  if (!("geolocation" in navigator)) return Promise.resolve(FALLBACK_LOCATION);
 
+  return new Promise((resolve) => {
     navigator.geolocation.getCurrentPosition(
-      async ({ coords }) => {
-        try {
-          const [weatherRes, placeRes] = await Promise.all([
-            fetch(
-              `https://api.open-meteo.com/v1/forecast?latitude=${coords.latitude}&longitude=${coords.longitude}&current=temperature_2m,weather_code`,
-            ),
-            fetch(
-              `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${coords.latitude}&longitude=${coords.longitude}&localityLanguage=en`,
-            ),
-          ]);
-
-          const weather = await weatherRes.json();
-          const place = await placeRes.json();
-          const { emoji, label } = describeWeather(weather.current.weather_code);
-
-          setState({
-            status: "ready",
-            tempC: Math.round(weather.current.temperature_2m),
-            emoji,
-            label,
-            place: place.city || place.locality || place.principalSubdivision || "your area",
-          });
-        } catch {
-          setState({ status: "unavailable" });
-        }
-      },
-      (error) => {
-        setState({ status: error.code === error.PERMISSION_DENIED ? "denied" : "unavailable" });
-      },
+      ({ coords }) => resolve({ latitude: coords.latitude, longitude: coords.longitude }),
+      () => resolve(FALLBACK_LOCATION),
       { timeout: 8000 },
     );
-  }, []);
+  });
+}
+
+export function WeatherPill() {
+  const [weather, setWeather] = useState<Weather | null>(null);
 
   useEffect(() => {
-    runFetch();
-  }, [runFetch]);
+    let cancelled = false;
 
-  function retry() {
-    setState({ status: "loading" });
-    runFetch();
-  }
+    currentCoords()
+      .then(({ latitude, longitude }) => fetchWeather(latitude, longitude))
+      .then((next) => {
+        if (!cancelled) setWeather(next);
+      })
+      .catch(() => {});
 
-  if (state.status === "loading") {
-    return (
-      <span
-        className="flex h-9 items-center rounded-full border px-3 text-xs"
-        style={{ borderColor: "var(--color-border)", color: "var(--color-text-muted)" }}
-      >
-        &hellip;
-      </span>
-    );
-  }
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  if (state.status === "denied") {
-    return (
-      <button
-        type="button"
-        onClick={() => setExpanded((v) => !v)}
-        className="flex flex-col items-end gap-1"
-      >
-        <span
-          className="flex h-9 items-center gap-1 rounded-full border px-3 text-xs"
-          style={{ borderColor: "var(--color-border)", color: "var(--color-text-muted)" }}
-        >
-          📍 Location blocked
-        </span>
-        {expanded && (
-          <span
-            className="max-w-[180px] text-right text-[11px]"
-            style={{ color: "var(--color-text-muted)" }}
-          >
-            Enable location for this site in your browser settings, then reopen the app.
-          </span>
-        )}
-      </button>
-    );
-  }
-
-  if (state.status === "unavailable") {
-    return (
-      <button
-        type="button"
-        onClick={retry}
-        className="flex h-9 items-center gap-1 rounded-full border px-3 text-xs"
-        style={{ borderColor: "var(--color-border)", color: "var(--color-text-muted)" }}
-      >
-        📍 Weather unavailable, tap to retry
-      </button>
-    );
-  }
+  // Nothing rendered until it resolves — a placeholder pill in the header
+  // reads as a broken control more than an empty gap does.
+  if (!weather) return null;
 
   return (
-    <button
-      type="button"
-      onClick={() => setExpanded((v) => !v)}
-      className="flex flex-col items-end gap-1"
+    <span
+      className="flex items-center gap-1 text-sm font-medium tabular-nums"
+      style={{ color: "var(--color-text)" }}
+      title={weather.label}
     >
-      <span
-        className="flex h-9 items-center gap-1.5 rounded-full border px-3 text-sm font-medium"
-        style={{
-          borderColor: "var(--color-border)",
-          background: "var(--color-surface)",
-          color: "var(--color-text)",
-        }}
-      >
-        <span aria-hidden>{state.emoji}</span>
-        {state.tempC}&deg;C
-        <span className="text-[9px]" style={{ color: "var(--color-text-muted)" }} aria-hidden>
-          {expanded ? "▲" : "▼"}
-        </span>
-      </span>
-      {expanded && (
-        <span className="pr-1 text-[11px]" style={{ color: "var(--color-text-muted)" }}>
-          {state.place}, {state.label.toLowerCase()}
-        </span>
-      )}
-    </button>
+      <span aria-hidden>{weather.emoji}</span>
+      {weather.tempC}&deg;
+      <span className="sr-only">, {weather.label}</span>
+    </span>
   );
 }

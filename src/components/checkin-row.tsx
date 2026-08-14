@@ -11,6 +11,7 @@ export function CheckInRow({
   value,
   onChange,
   isLast,
+  day,
 }: {
   id: string;
   emoji: string;
@@ -18,6 +19,9 @@ export function CheckInRow({
   value: number;
   onChange: (v: number) => void;
   isLast?: boolean;
+  // Which day of the block a comment is filed against. Defaults to today,
+  // set explicitly when the row is editing a past day.
+  day?: number;
 }) {
   const { commentsFor, addComment } = useHabits();
   const [showComment, setShowComment] = useState(false);
@@ -29,8 +33,9 @@ export function CheckInRow({
   function submit() {
     const text = draft.trim();
     if (!text) return;
-    addComment(id, text);
+    addComment(id, text, day);
     setDraft("");
+    setShowComment(false);
   }
 
   return (
@@ -48,16 +53,18 @@ export function CheckInRow({
         <button
           type="button"
           onClick={() => setShowComment((v) => !v)}
-          aria-label={`Comment on ${label}`}
-          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs"
+          aria-label={`Leave a comment on ${label}`}
+          className="flex h-6 w-6 shrink-0 items-center justify-center text-sm"
           style={{
-            borderColor: comments.length > 0 ? "var(--color-brand)" : "var(--color-border)",
             color: comments.length > 0 ? "var(--color-brand)" : "var(--color-text-muted)",
           }}
         >
           💬
         </button>
-        <span className="text-sm font-semibold tabular-nums" style={{ color: fill }}>
+        <span
+          className="w-10 text-right text-sm font-semibold tabular-nums"
+          style={{ color: fill }}
+        >
           {value}%
         </span>
       </div>
@@ -70,6 +77,7 @@ export function CheckInRow({
         step={10}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
+        aria-label={label}
         style={{ "--slider-fill": sliderFill(value) } as React.CSSProperties}
       />
 
@@ -86,39 +94,28 @@ export function CheckInRow({
       </div>
 
       {showComment && (
-        <div className="mt-2.5 flex flex-col gap-2">
-          {comments.length > 0 && (
-            <div className="flex flex-col gap-1">
-              {comments.map((c, i) => (
-                <div key={i} className="text-[11px]" style={{ color: "var(--color-text-muted)" }}>
-                  {c.text}
-                </div>
-              ))}
-            </div>
-          )}
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && submit()}
-              placeholder={`Leave a note on ${label} (optional)`}
-              className="flex-1 rounded-[var(--radius-sm)] border px-3 py-2 text-xs outline-none"
-              style={{
-                borderColor: "var(--color-border)",
-                background: "var(--color-bg)",
-                color: "var(--color-text)",
-              }}
-            />
-            <button
-              type="button"
-              onClick={submit}
-              className="rounded-[var(--radius-sm)] px-3 text-xs font-medium"
-              style={{ background: "var(--color-brand)", color: "var(--color-brand-contrast)" }}
-            >
-              Submit
-            </button>
-          </div>
+        <div className="mt-2 flex gap-2">
+          <input
+            type="text"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && submit()}
+            placeholder="Leave a comment"
+            className="flex-1 rounded-[var(--radius-sm)] border px-3 py-1.5 text-xs outline-none"
+            style={{
+              borderColor: "var(--color-border)",
+              background: "var(--color-bg)",
+              color: "var(--color-text)",
+            }}
+          />
+          <button
+            type="button"
+            onClick={submit}
+            className="rounded-[var(--radius-sm)] px-3 text-xs font-medium"
+            style={{ background: "var(--color-brand)", color: "var(--color-brand-contrast)" }}
+          >
+            Submit
+          </button>
         </div>
       )}
     </div>

@@ -41,8 +41,7 @@ export function MenuDrawer({ open, onClose }: { open: boolean; onClose: () => vo
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      <button aria-label="Close menu" className="flex-1 bg-black/40" onClick={onClose} />
+    <div className="fixed inset-0 z-50 flex justify-start">
       <div
         className="flex h-full w-72 flex-col gap-1 p-4"
         style={{ background: "var(--color-surface-raised)" }}
@@ -73,6 +72,7 @@ export function MenuDrawer({ open, onClose }: { open: boolean; onClose: () => vo
           </button>
         ))}
       </div>
+      <button aria-label="Close menu" className="flex-1 bg-black/40" onClick={onClose} />
 
       <HabitHistorySheet open={historyOpen} onClose={() => setHistoryOpen(false)} />
     </div>

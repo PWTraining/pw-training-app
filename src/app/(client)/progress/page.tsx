@@ -6,6 +6,8 @@ import { TopBar } from "@/components/top-bar";
 import { HabitGrid } from "@/components/habit-grid";
 import { AddHabitSheet } from "@/components/add-habit-sheet";
 import { ProgramAdherence } from "@/components/program-adherence";
+import { BlockCalendar } from "@/components/block-calendar";
+import { MOOD_ENTRIES } from "@/components/day-checkin";
 import { SectionDivider } from "@/components/section-divider";
 import {
   TrainingAdherenceCard,
@@ -23,17 +25,11 @@ import {
   type Timeframe,
 } from "@/lib/habits";
 
-const MOOD_ENTRIES = [
-  { id: "physical", emoji: "💪", label: "Body" },
-  { id: "mind", emoji: "🧠", label: "Mind" },
-  { id: "spirit", emoji: "☮️", label: "Spirit" },
-] as const;
-
 const LIST_TIMEFRAMES: Timeframe[] = ["Daily", "Weekly", "Monthly", "Yearly"];
 const LIST_TIMEFRAME_LABELS = { Daily: "Today", Weekly: "Week", Monthly: "Block", Yearly: "Year" };
 
 export default function ProgressPage() {
-  const { habits, todayValue, hasComments, restoreHabit } = useHabits();
+  const { habits, todayValue, restoreHabit } = useHabits();
   const [addOpen, setAddOpen] = useState(false);
   const [timeframe, setTimeframe] = useState<Timeframe>("Weekly");
 
@@ -83,6 +79,8 @@ export default function ProgressPage() {
           labels={LIST_TIMEFRAME_LABELS}
         />
 
+        <BlockCalendar />
+
         <SectionDivider label="Habit Tracker" />
 
         <section className="flex flex-col gap-3">
@@ -106,29 +104,17 @@ export default function ProgressPage() {
                   >
                     {habit.label}
                   </span>
-                  {hasComments(habit.id) && (
-                    <span
-                      className="text-xs"
-                      style={{ color: "var(--color-brand)" }}
-                      aria-label="Has a note"
-                      title="Has a note"
-                    >
-                      💬
-                    </span>
-                  )}
-                </div>
-                <HabitGrid habitId={habit.id} todayValue={todayValue(habit.id)} period={timeframe} />
-                <div className="mt-2 flex items-center justify-between">
                   <span className="text-xs font-medium" style={{ color: "var(--color-brand)" }}>
                     View &rsaquo;
                   </span>
                   <span
-                    className="text-sm font-semibold tabular-nums"
+                    className="w-10 text-right text-sm font-semibold tabular-nums"
                     style={{ color: adherenceColor(habitPct) }}
                   >
                     {habitPct}%
                   </span>
                 </div>
+                <HabitGrid habitId={habit.id} todayValue={todayValue(habit.id)} period={timeframe} />
               </Link>
             );
           })}
@@ -187,7 +173,7 @@ export default function ProgressPage() {
 
         <SectionDivider label="Training" />
 
-        <TrainingAdherenceCard timeframe={timeframe} cardioPct={todayValue("cardio")} />
+        <TrainingAdherenceCard cardioPct={todayValue("cardio")} />
 
         <SectionDivider label="Reviews & Calls" />
 

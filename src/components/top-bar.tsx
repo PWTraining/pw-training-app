@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { MenuButton, MenuDrawer } from "./menu-drawer";
-import { Wordmark } from "./wordmark";
+import { Logo } from "./logo";
+import { WeatherPill } from "./weather-pill";
 
 export function TopBar() {
   const [open, setOpen] = useState(false);
@@ -10,14 +11,17 @@ export function TopBar() {
   return (
     <>
       <header
-        className="sticky top-0 z-30 flex items-center justify-between border-b px-4 py-3 backdrop-blur"
+        className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b px-4 py-3 backdrop-blur"
         style={{
           borderColor: "var(--color-border)",
           background: "color-mix(in srgb, var(--color-surface) 92%, transparent)",
         }}
       >
         <MenuButton onClick={() => setOpen(true)} />
-        <Wordmark />
+        <div className="flex items-center gap-3">
+          <WeatherPill />
+          <Logo />
+        </div>
       </header>
 
       <MenuDrawer open={open} onClose={() => setOpen(false)} />

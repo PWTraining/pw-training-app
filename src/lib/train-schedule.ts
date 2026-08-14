@@ -5,14 +5,15 @@
 
 export type DaySessionInfo = { title: string; exerciseCount: number } | null;
 
-// index 0 = Sunday .. 6 = Saturday
+// index 0 = Sunday .. 6 = Saturday. 3 full-body sessions a week — Mon/Wed/Fri
+// — with rest days in between.
 export const WEEKLY_SESSION_PLAN: DaySessionInfo[] = [
   null,
-  { title: "Upper / Lower, Week 4", exerciseCount: 6 },
-  { title: "Lower Body Strength", exerciseCount: 5 },
+  { title: "Full Body", exerciseCount: 3 },
   null,
-  { title: "Upper Body Push/Pull", exerciseCount: 6 },
-  { title: "Full Body Conditioning", exerciseCount: 8 },
+  { title: "Full Body", exerciseCount: 3 },
+  null,
+  { title: "Full Body", exerciseCount: 3 },
   null,
 ];
 
@@ -22,7 +23,6 @@ export function todaysSession(): string | null {
 
 const WEEKDAY_LABELS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 function startOfWeek(date: Date): Date {
   const d = new Date(date);
@@ -106,5 +106,3 @@ export function weekRangeLabel(days: ProgramDay[]): string {
 export function isToday(date: Date): boolean {
   return isSameDay(date, new Date());
 }
-
-export { DAY_MS };

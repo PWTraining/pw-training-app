@@ -27,13 +27,16 @@ const PERIOD_NOUN: Record<Timeframe, string> = {
   Yearly: "this year",
 };
 
-export function TrainingAdherenceCard({
-  timeframe,
-  cardioPct,
-}: {
-  timeframe: Timeframe;
-  cardioPct: number;
-}) {
+const TRAIN_TIMEFRAMES: Timeframe[] = ["Daily", "Weekly", "Monthly", "Yearly"];
+const TRAIN_TIMEFRAME_LABELS: Record<Timeframe, string> = {
+  Daily: "Day",
+  Weekly: "Week",
+  Monthly: "Block",
+  Yearly: "Year",
+};
+
+export function TrainingAdherenceCard({ cardioPct }: { cardioPct: number }) {
+  const [timeframe, setTimeframe] = useState<Timeframe>("Weekly");
   const { completed, planned } = MOCK_TRAINING_SESSIONS_BY_PERIOD[timeframe];
   const pct = planned > 0 ? Math.round((completed / planned) * 100) : 0;
 
@@ -42,12 +45,34 @@ export function TrainingAdherenceCard({
       className="rounded-[var(--radius-lg)] border p-4"
       style={{ borderColor: "var(--color-border)" }}
     >
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <h2 className="text-base font-bold" style={{ color: "var(--color-text)" }}>
+          Training Adherence
+        </h2>
+        <div
+          className="flex gap-0.5 rounded-full border p-0.5"
+          style={{ borderColor: "var(--color-border)" }}
+        >
+          {TRAIN_TIMEFRAMES.map((tf) => (
+            <button
+              key={tf}
+              type="button"
+              onClick={() => setTimeframe(tf)}
+              className="rounded-full px-2 py-1 text-[10px] font-medium"
+              style={{
+                background: timeframe === tf ? "var(--color-brand)" : "transparent",
+                color:
+                  timeframe === tf ? "var(--color-brand-contrast)" : "var(--color-text-muted)",
+              }}
+            >
+              {TRAIN_TIMEFRAME_LABELS[tf]}
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="flex items-center gap-4">
         <AdherenceRing pct={pct} />
         <div className="flex-1">
-          <div className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>
-            Training Adherence
-          </div>
           <div className="text-xs" style={{ color: "var(--color-text-muted)" }}>
             {completed} of {planned} sessions completed {PERIOD_NOUN[timeframe]}
           </div>
@@ -140,7 +165,7 @@ export function CheckInCallsCard() {
                 onChange={(e) =>
                   setReasons((prev) => ({ ...prev, [call.call]: e.target.value }))
                 }
-                placeholder="Why was this missed? (optional)"
+                placeholder="Why was this missed?"
                 className="rounded-[var(--radius-sm)] border px-3 py-1.5 text-xs outline-none"
                 style={{
                   borderColor: "var(--color-border)",

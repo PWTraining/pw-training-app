@@ -28,7 +28,7 @@ export function ProgramAdherence({
     >
       <div className="mb-3 flex items-center justify-between gap-2">
         <h2 className="text-base font-bold" style={{ color: "var(--color-text)" }}>
-          Program Adherence
+          Adherence
         </h2>
         {timeframes.length > 1 && (
           <div

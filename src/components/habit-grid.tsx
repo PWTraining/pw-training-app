@@ -1,7 +1,9 @@
+"use client";
+
+import { useHabits } from "@/lib/habits-context";
 import {
   BLOCK_LENGTH,
   TODAY_INDEX,
-  MOCK_BLOCK,
   PERIOD_DAYS,
   PERIOD_COLUMNS,
   mockDayValue,
@@ -112,12 +114,14 @@ export function HabitGrid({
   onSelectDay?: (day: number) => void;
   period?: Timeframe;
 }) {
+  const { dayValue } = useHabits();
   const commentDays = new Set((comments ?? []).map((c) => c.day));
 
   // Monthly is a forward-looking "day 11 of 28" block view (with future
-  // days padded out), not a trailing history window like the rest.
+  // days padded out), not a trailing history window like the rest. Its cell
+  // indices map 1:1 to block day indices, so it reads through dayValue and
+  // picks up any past day the client has since filled in.
   if (period === "Monthly") {
-    const loggedDays = MOCK_BLOCK[habitId] ?? [];
     const rows = Math.ceil(BLOCK_LENGTH / 7);
     const { cell, gap } = cellMetrics(rows);
 
@@ -126,7 +130,7 @@ export function HabitGrid({
         {Array.from({ length: BLOCK_LENGTH }, (_, i) => {
           const isFuture = i > TODAY_INDEX;
           const isToday = i === TODAY_INDEX;
-          const value = isToday ? (todayValue ?? 0) : (loggedDays[i] ?? 0);
+          const value = isToday ? (todayValue ?? 0) : dayValue(habitId, i);
           const hasComment = commentDays.has(i);
 
           return (
