@@ -23,9 +23,9 @@ export const metadata: Metadata = {
     title: "PW Training",
     statusBarStyle: "default",
   },
-  icons: {
-    apple: "/icon-192.png",
-  },
+  // No `icons` here on purpose: declaring it overrides the icon.png /
+  // apple-icon.png file convention in this directory, which is what emits
+  // the tab, home-screen and desktop-install icons.
 };
 
 export const viewport = {
