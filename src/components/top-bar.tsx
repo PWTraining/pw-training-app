@@ -5,16 +5,23 @@ import { usePathname, useRouter } from "next/navigation";
 import { MenuButton, MenuDrawer } from "./menu-drawer";
 import { Logo } from "./logo";
 
-// The tab roots are landing places — there's nothing behind them, so they
-// get no back control. Anything deeper was navigated into and does.
-const TAB_ROOTS = ["/home", "/train", "/progress", "/chat", "/profile"];
-
 export function TopBar() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
-  const showBack = !TAB_ROOTS.includes(pathname);
+  // Home is the one screen you can't have arrived at from somewhere else.
+  // Every other screen can be reached by tapping through — including the
+  // other tabs, e.g. Today's Session opening Train from Home — so they all
+  // keep a way back.
+  const showBack = pathname !== "/home";
+
+  function goBack() {
+    // A page opened cold (shared link, refresh, home-screen shortcut) has
+    // nothing to pop, so send those to Home rather than out of the app.
+    if (window.history.length > 1) router.back();
+    else router.push("/home");
+  }
 
   return (
     <>
@@ -31,7 +38,7 @@ export function TopBar() {
           {showBack && (
             <button
               type="button"
-              onClick={() => router.back()}
+              onClick={goBack}
               aria-label="Back"
               className="flex h-11 w-11 items-center justify-center rounded-full text-2xl leading-none"
               style={{ color: "var(--color-brand)" }}
