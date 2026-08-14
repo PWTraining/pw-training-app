@@ -10,6 +10,8 @@ const DAY_COMMENT_KEY = "pw-day-comment";
 const TODAY_VALUES_KEY = "pw-today-values";
 const DAY_VALUES_KEY = "pw-day-values";
 const REFLECTIONS_KEY = "pw-day-reflections";
+const PHOTOS_KEY = "pw-day-photos";
+const CLOSED_KEY = "pw-closed-days";
 
 export type HabitHistoryEntry = {
   action: "added" | "archived" | "restored" | "renamed";
@@ -30,12 +32,25 @@ type DayValues = Record<string, Record<number, number>>;
 // One free-text reflection per day of the block.
 type Reflections = Record<number, string>;
 
+// A moment the client captured on a given day. `src` is a downscaled data
+// URL — see moments.tsx for why they're shrunk before they get here.
+export type DayPhoto = { id: string; src: string; caption: string };
+
+type PhotosByDay = Record<number, DayPhoto[]>;
+
+// Days the client has finished and put away. Today starts open; earlier
+// days are closed unless they've reopened one to correct it.
+type ClosedDays = Record<number, boolean>;
+
+export const MAX_PHOTOS_PER_DAY = 9;
+
 // Everything a single undo step needs to put back.
 type Snapshot = {
   habits: Habit[];
   comments: CommentsByHabit;
   dayValues: DayValues;
   reflections: Reflections;
+  photos: PhotosByDay;
 };
 
 const UNDO_LIMIT = 40;
@@ -84,6 +99,12 @@ type HabitsContextValue = {
   dayValue: (habitId: string, day: number) => number;
   setDayValue: (habitId: string, day: number, value: number) => void;
   isDayLogged: (day: number) => boolean;
+  isDayClosed: (day: number) => boolean;
+  setDayClosed: (day: number, closed: boolean) => void;
+  photosFor: (day: number) => DayPhoto[];
+  addPhotos: (day: number, photos: DayPhoto[]) => void;
+  removePhoto: (day: number, id: string) => void;
+  setPhotoCaption: (day: number, id: string, caption: string) => void;
   undo: () => void;
   canUndo: boolean;
 };
@@ -111,6 +132,8 @@ export function HabitsProvider({ children }: { children: React.ReactNode }) {
   const [comments, setComments] = useState<CommentsByHabit>(DEFAULT_COMMENTS);
   const [dayValues, setDayValues] = useState<DayValues>(DEFAULT_DAY_VALUES);
   const [reflections, setReflections] = useState<Reflections>({});
+  const [photos, setPhotos] = useState<PhotosByDay>({});
+  const [closedDays, setClosedDays] = useState<ClosedDays>({});
   const [undoStack, setUndoStack] = useState<Snapshot[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
@@ -143,8 +166,13 @@ export function HabitsProvider({ children }: { children: React.ReactNode }) {
     const mergedReflections =
       storedReflections ?? (legacyReflection ? { [TODAY_INDEX]: legacyReflection } : {});
 
+    const storedPhotos = loadJSON(PHOTOS_KEY, {} as PhotosByDay);
+    const storedClosed = loadJSON(CLOSED_KEY, {} as ClosedDays);
+
     Promise.resolve().then(() => {
       setHabits(storedHabits);
+      setPhotos(storedPhotos);
+      setClosedDays(storedClosed);
       setHistory(storedHistory);
       setComments(storedComments);
       setDayValues(mergedDayValues);
@@ -178,6 +206,21 @@ export function HabitsProvider({ children }: { children: React.ReactNode }) {
     window.localStorage.setItem(REFLECTIONS_KEY, JSON.stringify(reflections));
   }, [reflections, hydrated]);
 
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      window.localStorage.setItem(PHOTOS_KEY, JSON.stringify(photos));
+    } catch {
+      // Photos are the one thing here big enough to hit the storage quota.
+      // Failing to persist beats throwing mid-render; see moments.tsx.
+    }
+  }, [photos, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    window.localStorage.setItem(CLOSED_KEY, JSON.stringify(closedDays));
+  }, [closedDays, hydrated]);
+
   const value = useMemo<HabitsContextValue>(() => {
     // Snapshot the state as it is before a change lands, so undo restores
     // exactly what was on screen a moment ago.
@@ -185,12 +228,14 @@ export function HabitsProvider({ children }: { children: React.ReactNode }) {
       if (coalesceKey && lastActionKey.current === coalesceKey) return;
       lastActionKey.current = coalesceKey ?? null;
       setUndoStack((prev) =>
-        [...prev, { habits, comments, dayValues, reflections }].slice(-UNDO_LIMIT),
+        [...prev, { habits, comments, dayValues, reflections, photos }].slice(-UNDO_LIMIT),
       );
     }
 
+    // Sliders deliberately sit outside undo: they're a drag away from any
+    // other value, so recording them would only bury the changes that are
+    // actually awkward to redo by hand.
     function writeDayValue(habitId: string, day: number, val: number) {
-      remember(`value:${habitId}:${day}`);
       setDayValues((prev) => ({ ...prev, [habitId]: { ...(prev[habitId] ?? {}), [day]: val } }));
     }
 
@@ -280,6 +325,28 @@ export function HabitsProvider({ children }: { children: React.ReactNode }) {
       dayValue: (habitId, day) => readDayValue(dayValues, habitId, day),
       setDayValue: (habitId, day, val) => writeDayValue(habitId, day, val),
       isDayLogged: (day) => Object.values(dayValues).some((byDay) => byDay[day] !== undefined),
+      // Today stays open; anything earlier is put away unless reopened.
+      isDayClosed: (day) => closedDays[day] ?? day < TODAY_INDEX,
+      setDayClosed: (day, closed) => setClosedDays((prev) => ({ ...prev, [day]: closed })),
+      photosFor: (day) => photos[day] ?? [],
+      addPhotos: (day, next) => {
+        remember();
+        setPhotos((prev) => ({
+          ...prev,
+          [day]: [...(prev[day] ?? []), ...next].slice(0, MAX_PHOTOS_PER_DAY),
+        }));
+      },
+      removePhoto: (day, id) => {
+        remember();
+        setPhotos((prev) => ({ ...prev, [day]: (prev[day] ?? []).filter((p) => p.id !== id) }));
+      },
+      setPhotoCaption: (day, id, caption) => {
+        remember(`caption:${day}:${id}`);
+        setPhotos((prev) => ({
+          ...prev,
+          [day]: (prev[day] ?? []).map((p) => (p.id === id ? { ...p, caption } : p)),
+        }));
+      },
       canUndo: undoStack.length > 0,
       undo: () => {
         const previous = undoStack[undoStack.length - 1];
@@ -289,10 +356,11 @@ export function HabitsProvider({ children }: { children: React.ReactNode }) {
         setComments(previous.comments);
         setDayValues(previous.dayValues);
         setReflections(previous.reflections);
+        setPhotos(previous.photos);
         setUndoStack((prev) => prev.slice(0, -1));
       },
     };
-  }, [habits, history, comments, dayValues, reflections, undoStack]);
+  }, [habits, history, comments, dayValues, reflections, photos, closedDays, undoStack]);
 
   return <HabitsContext.Provider value={value}>{children}</HabitsContext.Provider>;
 }

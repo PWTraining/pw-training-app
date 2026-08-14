@@ -16,7 +16,13 @@ export const MOOD_ENTRIES = [
 
 // The check-in controls, shared verbatim between Home (today) and the
 // Progress day view (any past day) so the two can't drift apart.
-export function DayCheckIn({ day = TODAY_INDEX }: { day?: number }) {
+export function DayCheckIn({
+  day = TODAY_INDEX,
+  readOnly = false,
+}: {
+  day?: number;
+  readOnly?: boolean;
+}) {
   const { habits, dayValue, setDayValue } = useHabits();
   const [editing, setEditing] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
@@ -34,19 +40,21 @@ export function DayCheckIn({ day = TODAY_INDEX }: { day?: number }) {
             Daily Check-In
           </h2>
           <div className="flex items-center gap-1">
-            <UndoButton />
-            <button
-              type="button"
-              onClick={() => setEditing((v) => !v)}
-              className="text-xs font-semibold"
-              style={{ color: "var(--color-brand)" }}
-            >
-              {editing ? "Done" : "Edit"}
-            </button>
+            {editing && <UndoButton />}
+            {!readOnly && (
+              <button
+                type="button"
+                onClick={() => setEditing((v) => !v)}
+                className="text-xs font-semibold"
+                style={{ color: "var(--color-brand)" }}
+              >
+                {editing ? "Done" : "Edit"}
+              </button>
+            )}
           </div>
         </div>
 
-        {editing ? (
+        {editing && !readOnly ? (
           <div className="mt-2 flex flex-col gap-2">
             <HabitEditor habits={activeHabits} onDone={() => setEditing(false)} />
             <button
@@ -70,6 +78,7 @@ export function DayCheckIn({ day = TODAY_INDEX }: { day?: number }) {
               onChange={(v) => setDayValue(habit.id, day, v)}
               isLast={i === activeHabits.length - 1}
               day={day}
+              readOnly={readOnly}
             />
           ))
         )}
@@ -98,6 +107,7 @@ export function DayCheckIn({ day = TODAY_INDEX }: { day?: number }) {
             onChange={(v) => setDayValue(mood.id, day, v)}
             isLast={i === MOOD_ENTRIES.length - 1}
             day={day}
+            readOnly={readOnly}
           />
         ))}
       </section>

@@ -12,6 +12,7 @@ export function CheckInRow({
   onChange,
   isLast,
   day,
+  readOnly = false,
 }: {
   id: string;
   emoji: string;
@@ -22,6 +23,8 @@ export function CheckInRow({
   // Which day of the block a comment is filed against. Defaults to today,
   // set explicitly when the row is editing a past day.
   day?: number;
+  // A saved day shows its values but doesn't take new input until reopened.
+  readOnly?: boolean;
 }) {
   const { commentFor, setComment } = useHabits();
   const targetDay = day ?? TODAY_INDEX;
@@ -56,6 +59,7 @@ export function CheckInRow({
         </span>
         <button
           type="button"
+          disabled={readOnly && !saved}
           onClick={() => (open ? setOpen(false) : startEditing())}
           aria-label={saved ? `Edit your comment on ${label}` : `Leave a comment on ${label}`}
           className="flex h-6 w-6 shrink-0 items-center justify-center text-sm"
@@ -79,6 +83,7 @@ export function CheckInRow({
         step={10}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
+        disabled={readOnly}
         aria-label={label}
         style={{ "--slider-fill": sliderFill(value) } as React.CSSProperties}
       />
@@ -97,7 +102,19 @@ export function CheckInRow({
 
       {/* The saved comment reads as plain text until tapped, so a past day
           shows as a snapshot rather than a form. */}
-      {saved && !open && (
+      {saved && !open && readOnly && (
+        <p
+          className="mt-2 rounded-[var(--radius-sm)] px-2.5 py-1.5 text-xs"
+          style={{
+            background: "color-mix(in srgb, var(--color-brand) 6%, var(--color-surface))",
+            color: "var(--color-text)",
+          }}
+        >
+          {saved}
+        </p>
+      )}
+
+      {saved && !open && !readOnly && (
         <button
           type="button"
           onClick={startEditing}
@@ -114,7 +131,7 @@ export function CheckInRow({
         </button>
       )}
 
-      {open && (
+      {open && !readOnly && (
         <div className="mt-2 flex flex-col gap-2">
           <textarea
             value={draft}

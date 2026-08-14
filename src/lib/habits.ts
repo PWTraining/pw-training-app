@@ -83,11 +83,11 @@ function ordinal(day: number) {
   return ["th", "st", "nd", "rd"][day % 10] ?? "th";
 }
 
-// "Thursday 13th of August" — the day view's title, spelled out in full
-// rather than as a relative label like "Yesterday".
+// "Thu 13th of August" — the day view's title. Weekday abbreviated so the
+// line stays on one row between the Back and Previous/Next controls.
 export function fullDate(dayIndex: number) {
   const date = dateForDay(dayIndex);
-  const weekday = date.toLocaleDateString(undefined, { weekday: "long" });
+  const weekday = date.toLocaleDateString(undefined, { weekday: "short" });
   const month = date.toLocaleDateString(undefined, { month: "long" });
   const day = date.getDate();
   return `${weekday} ${day}${ordinal(day)} of ${month}`;

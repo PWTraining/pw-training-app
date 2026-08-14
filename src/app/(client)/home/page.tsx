@@ -6,6 +6,7 @@ import { TopBar } from "@/components/top-bar";
 import { WeatherPill } from "@/components/weather-pill";
 import { DayCheckIn } from "@/components/day-checkin";
 import { DailyReflection } from "@/components/daily-reflection";
+import { Moments } from "@/components/moments";
 import { ProgramAdherence } from "@/components/program-adherence";
 import { useHabits } from "@/lib/habits-context";
 import { MOCK_TRAINING_PCT, MOCK_COACH_COMMENT, weeklyPct, type Timeframe } from "@/lib/habits";
@@ -133,6 +134,8 @@ export default function HomePage() {
         <DayCheckIn />
 
         <DailyReflection />
+
+        <Moments />
 
       </div>
     </div>

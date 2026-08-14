@@ -10,7 +10,7 @@ export function TopBar() {
   return (
     <>
       <header
-        className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b px-4 py-3 backdrop-blur"
+        className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b px-4 py-1.5 backdrop-blur"
         style={{
           borderColor: "var(--color-border)",
           background: "color-mix(in srgb, var(--color-surface) 92%, transparent)",

@@ -2,25 +2,23 @@
 
 import { useHabits } from "@/lib/habits-context";
 
-// Steps back through anything logged or edited — a slider, a comment, a
-// rename, an archive. Hidden until there is something to undo so it never
-// sits there dead.
-export function UndoButton({ label = "Undo" }: { label?: string }) {
+// Steps back through anything awkward to redo by hand — a rename, a
+// reorder, an archive, a comment, a photo. Sliders are excluded on purpose;
+// they're a drag away from any other value.
+export function UndoButton() {
   const { undo, canUndo } = useHabits();
-
-  if (!canUndo) return null;
 
   return (
     <button
       type="button"
       onClick={undo}
-      aria-label={label}
-      title={label}
-      className="flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold"
+      disabled={!canUndo}
+      aria-label="Undo the last change"
+      title="Undo the last change"
+      className="flex h-7 w-7 items-center justify-center rounded-full text-base disabled:opacity-30"
       style={{ color: "var(--color-brand)" }}
     >
       <span aria-hidden>↺</span>
-      {label}
     </button>
   );
 }

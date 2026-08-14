@@ -5,7 +5,7 @@ import Link from "next/link";
 import { BLOCK_LENGTH, TODAY_INDEX, type Timeframe } from "@/lib/habits";
 import { useHabits } from "@/lib/habits-context";
 
-const WEEKDAYS = ["M", "T", "W", "T", "F", "S", "S"];
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const DAY_MS = 86_400_000;
 
 // Which block days the timeframe toggle above the calendar is covering, so
@@ -18,7 +18,7 @@ function rangeFor(timeframe: Timeframe): [number, number] {
 }
 
 export function MonthCalendar({ timeframe }: { timeframe: Timeframe }) {
-  const { isDayLogged } = useHabits();
+  const { isDayClosed } = useHabits();
   const [monthOffset, setMonthOffset] = useState(0);
   // Today is only knowable on the client, so the grid renders after mount
   // rather than hydrating over a server guess in the wrong timezone.
@@ -110,31 +110,44 @@ export function MonthCalendar({ timeframe }: { timeframe: Timeframe }) {
             const isToday = blockIndex === TODAY_INDEX;
             const isFuture = blockIndex > TODAY_INDEX;
             const inRange = blockIndex >= rangeStart && blockIndex <= rangeEnd;
-            const logged = !isFuture && isDayLogged(blockIndex);
+            // A day the client has finished and saved gets a tick; today
+            // stays open, so it never claims to be done.
+            const done = !isFuture && !isToday && isDayClosed(blockIndex);
 
             const cell = (
               <div
-                className="flex aspect-square w-full items-center justify-center rounded-[var(--radius-sm)] border text-[11px] font-medium tabular-nums"
+                className="relative flex aspect-square w-full items-center justify-center rounded-[var(--radius-sm)] border text-[11px] font-medium tabular-nums"
                 style={{
                   borderColor: isToday
                     ? "var(--color-brand)"
-                    : inRange
-                      ? "color-mix(in srgb, var(--color-brand) 35%, var(--color-border))"
-                      : "var(--color-border)",
+                    : done
+                      ? "color-mix(in srgb, var(--color-success) 45%, transparent)"
+                      : inRange
+                        ? "color-mix(in srgb, var(--color-brand) 35%, var(--color-border))"
+                        : "var(--color-border)",
                   borderWidth: isToday ? 2 : 1,
-                  background: logged
-                    ? "color-mix(in srgb, var(--color-brand) 10%, var(--color-surface))"
+                  background: done
+                    ? "color-mix(in srgb, var(--color-success) 12%, var(--color-surface))"
                     : "var(--color-surface)",
                   color: "var(--color-text)",
-                  opacity: isFuture ? 0.3 : inRange ? 1 : 0.5,
+                  opacity: isFuture ? 0.3 : inRange ? 1 : 0.55,
                 }}
               >
                 {dayOfMonth}
+                {done && (
+                  <span
+                    className="absolute -left-0.5 -top-1 text-[9px] font-bold"
+                    style={{ color: "var(--color-success)" }}
+                    aria-hidden
+                  >
+                    ✓
+                  </span>
+                )}
               </div>
             );
 
-            // Only elapsed days of the current block have a snapshot to open.
-            const canOpen = !isFuture && blockIndex >= 0;
+            // Any past day can be opened, including earlier blocks.
+            const canOpen = !isFuture;
             if (!canOpen) return <div key={dayOfMonth}>{cell}</div>;
 
             return (
