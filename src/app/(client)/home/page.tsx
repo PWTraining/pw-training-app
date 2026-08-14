@@ -4,12 +4,15 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { TopBar } from "@/components/top-bar";
 import { WeatherHeader } from "@/components/weather-pill";
-import { DayCheckIn } from "@/components/day-checkin";
+import { DayCheckIn, MOOD_ENTRIES } from "@/components/day-checkin";
 import { DailyReflection } from "@/components/daily-reflection";
 import { Moments } from "@/components/moments";
 import { ProgramAdherence } from "@/components/program-adherence";
 import { CoachNote } from "@/components/coach-note";
+import { WeightTracker } from "@/components/weight-tracker";
+import { StepsAndSleep } from "@/components/steps-sleep";
 import { useHabits } from "@/lib/habits-context";
+import { useTrainLog } from "@/lib/train-log";
 import { MOCK_TRAINING_PCT, MOCK_COACH_COMMENT, weeklyPct, type Timeframe } from "@/lib/habits";
 import { dateKey, todaysSession } from "@/lib/train-schedule";
 
@@ -21,23 +24,31 @@ export default function HomePage() {
   const [timeframe, setTimeframe] = useState<Timeframe>("Daily");
   const session = useMemo(() => todaysSession(), []);
   const todayKey = useMemo(() => dateKey(new Date()), []);
+  const { isSessionSaved } = useTrainLog();
+
+  // Adherence is every tracked slider given the same weight — each habit,
+  // each of Mind, Body and Spirit — plus whether the day's session got done.
+  // A rest day counts as met, since there was nothing to miss.
+  const trainingToday = !session || isSessionSaved(todayKey) ? 100 : 0;
 
   const adherenceValues = useMemo<Partial<Record<Timeframe, number>>>(() => {
-    if (habits.length === 0) {
-      return { Daily: MOCK_TRAINING_PCT, Weekly: MOCK_TRAINING_PCT };
+    const tracked = [...habits.filter((h) => !h.archived), ...MOOD_ENTRIES];
+
+    if (tracked.length === 0) {
+      return { Daily: trainingToday, Weekly: MOCK_TRAINING_PCT };
     }
 
-    const dailyHabits =
-      habits.reduce((sum, habit) => sum + todayValue(habit.id), 0) / habits.length;
-    const weeklyHabits =
-      habits.reduce((sum, habit) => sum + weeklyPct(habit.id, todayValue(habit.id)), 0) /
-      habits.length;
+    const daily = tracked.reduce((sum, item) => sum + todayValue(item.id), 0);
+    const weekly = tracked.reduce(
+      (sum, item) => sum + weeklyPct(item.id, todayValue(item.id)),
+      0,
+    );
 
     return {
-      Daily: Math.round((dailyHabits + MOCK_TRAINING_PCT) / 2),
-      Weekly: Math.round((weeklyHabits + MOCK_TRAINING_PCT) / 2),
+      Daily: Math.round((daily + trainingToday) / (tracked.length + 1)),
+      Weekly: Math.round((weekly + MOCK_TRAINING_PCT) / (tracked.length + 1)),
     };
-  }, [habits, todayValue]);
+  }, [habits, todayValue, trainingToday]);
 
 
   return (
@@ -105,6 +116,12 @@ export default function HomePage() {
         <DailyReflection />
 
         <Moments />
+
+        {/* The rest of what gets logged each day, kept below the check-in
+            because it's numbers to enter rather than a scale to set. */}
+        <WeightTracker />
+
+        <StepsAndSleep />
 
       </div>
     </div>
