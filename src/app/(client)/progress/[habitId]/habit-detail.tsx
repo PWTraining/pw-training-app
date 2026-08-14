@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { TopBar } from "@/components/top-bar";
 import { AdherenceRing } from "@/components/adherence-ring";
 import { HabitGrid } from "@/components/habit-grid";
 import { HabitEditor } from "@/components/habit-editor";
@@ -59,21 +60,12 @@ export function HabitDetail({ habitId }: { habitId: string }) {
 
   return (
     <div>
-      <header
-        className="sticky top-0 z-30 flex items-center gap-2 border-b px-4 py-3 backdrop-blur"
-        style={{
-          borderColor: "var(--color-border)",
-          background: "color-mix(in srgb, var(--color-surface) 92%, transparent)",
-        }}
+      <TopBar />
+
+      <div
+        className="flex items-center gap-2 border-b px-4 py-2"
+        style={{ borderColor: "var(--color-border)" }}
       >
-        <Link
-          href="/progress"
-          aria-label="Back to progress"
-          className="flex h-9 w-9 items-center justify-center rounded-full text-xl"
-          style={{ color: "var(--color-text)" }}
-        >
-          &lsaquo;
-        </Link>
         <span className="text-xl leading-none" aria-hidden>
           {habit.emoji}
         </span>
@@ -88,7 +80,7 @@ export function HabitDetail({ habitId }: { habitId: string }) {
         >
           {editing ? "Done" : "Edit"}
         </button>
-      </header>
+      </div>
 
       {editing && (
         <div className="px-4 pt-4">

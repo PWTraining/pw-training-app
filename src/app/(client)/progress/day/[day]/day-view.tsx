@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { TopBar } from "@/components/top-bar";
 import { DayCheckIn } from "@/components/day-checkin";
 import { DailyReflection } from "@/components/daily-reflection";
 import { Moments } from "@/components/moments";
@@ -33,25 +34,16 @@ export function DayView({ day }: { day: number }) {
 
   return (
     <div>
-      <header
-        className="sticky top-0 z-30 flex items-center gap-2 border-b px-4 py-3 backdrop-blur"
-        style={{
-          borderColor: "var(--color-border)",
-          background: "color-mix(in srgb, var(--color-surface) 92%, transparent)",
-        }}
-      >
-        <Link
-          href="/progress"
-          className="shrink-0 rounded-full px-2 py-1 text-xs font-semibold"
-          style={{ color: "var(--color-brand)" }}
-        >
-          &lsaquo; Back
-        </Link>
+      <TopBar />
 
+      <div
+        className="flex items-center gap-2 border-b px-4 py-2"
+        style={{ borderColor: "var(--color-border)" }}
+      >
         {/* Dates resolve in the viewer's timezone, which the server doesn't
             know, so let the client's value win over the prerendered one. */}
         <div
-          className="flex-1 text-center text-base font-bold"
+          className="flex-1 text-base font-bold"
           style={{ color: "var(--color-text)" }}
           suppressHydrationWarning
         >
@@ -77,7 +69,7 @@ export function DayView({ day }: { day: number }) {
             Next
           </button>
         </div>
-      </header>
+      </div>
 
       <div className="flex flex-col gap-5 px-4 pt-4 pb-6">
         {/* A finished day sits saved rather than permanently open. Reopening

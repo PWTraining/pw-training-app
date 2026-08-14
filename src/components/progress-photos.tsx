@@ -122,7 +122,7 @@ export function ProgressPhotos() {
         className="rounded-[var(--radius-md)] border py-2.5 text-sm font-medium disabled:opacity-50"
         style={{ borderColor: "var(--color-border)", color: "var(--color-brand)" }}
       >
-        {busy ? "Adding…" : "+ Add progress photo"}
+        {busy ? "Adding…" : "+ Add photos"}
       </button>
 
       {open && (

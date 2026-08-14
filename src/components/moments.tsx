@@ -113,7 +113,7 @@ export function Moments({ day = TODAY_INDEX }: { day?: number }) {
           ? "Adding…"
           : remaining <= 0
             ? `That's all ${MAX_PHOTOS_PER_DAY} for today`
-            : "+ Add a photo"}
+            : "+ Add photos"}
       </button>
 
       {open && (

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TopBar } from "@/components/top-bar";
 import { notFound } from "next/navigation";
 import { DOCUMENTS } from "@/lib/portal-mocks";
 
@@ -14,28 +15,14 @@ export default async function DocumentDetailPage({
 
   return (
     <div>
-      <header
-        className="sticky top-0 z-30 flex items-center gap-2 border-b px-4 py-3 backdrop-blur"
-        style={{
-          borderColor: "var(--color-border)",
-          background: "color-mix(in srgb, var(--color-surface) 92%, transparent)",
-        }}
+      <TopBar />
+
+      <h1
+        className="px-4 pt-4 text-xl font-bold"
+        style={{ color: "var(--color-text)" }}
       >
-        <Link
-          href="/profile/documents"
-          aria-label="Back to documents"
-          className="flex h-9 w-9 items-center justify-center rounded-full text-xl"
-          style={{ color: "var(--color-text)" }}
-        >
-          &lsaquo;
-        </Link>
-        <span className="text-xl leading-none" aria-hidden>
-          {doc.emoji}
-        </span>
-        <h1 className="text-lg font-semibold" style={{ color: "var(--color-text)" }}>
-          {doc.title}
-        </h1>
-      </header>
+        {doc.title}
+      </h1>
 
       <div className="flex flex-col gap-4 px-4 pt-4 pb-6">
         <section

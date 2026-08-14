@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TopBar } from "@/components/top-bar";
 import { notFound } from "next/navigation";
 import { PHASES } from "@/lib/portal-mocks";
 
@@ -14,25 +15,14 @@ export default async function PhaseDetailPage({
 
   return (
     <div>
-      <header
-        className="sticky top-0 z-30 flex items-center gap-2 border-b px-4 py-3 backdrop-blur"
-        style={{
-          borderColor: "var(--color-border)",
-          background: "color-mix(in srgb, var(--color-surface) 92%, transparent)",
-        }}
+      <TopBar />
+
+      <h1
+        className="px-4 pt-4 text-xl font-bold"
+        style={{ color: "var(--color-text)" }}
       >
-        <Link
-          href="/profile/roadmap"
-          aria-label="Back to phases"
-          className="flex h-9 w-9 items-center justify-center rounded-full text-xl"
-          style={{ color: "var(--color-text)" }}
-        >
-          &lsaquo;
-        </Link>
-        <h1 className="text-lg font-semibold" style={{ color: "var(--color-text)" }}>
-          {phase.name}
-        </h1>
-      </header>
+        {phase.name}
+      </h1>
 
       <div className="flex flex-col gap-4 px-4 pt-4 pb-6">
         <section
