@@ -226,8 +226,9 @@ export function WeatherHeader({ children }: { children: React.ReactNode }) {
           <div className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>
             {weather.place} <span aria-hidden>📍</span>
           </div>
+          {/* No temperature here: the button beside it already carries it. */}
           <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--color-text)" }}>
-            <span className="tabular-nums">{weather.tempC}&deg;</span>, {weather.summary}.
+            {weather.summary}.
           </p>
         </div>
       )}

@@ -4,15 +4,17 @@ import { useCallback, useEffect, useState } from "react";
 
 const LOG_KEY = "pw-daily-log";
 
-// Everything tracked once a day that isn't a habit slider. Keyed by real
-// calendar date, so each new day starts blank on its own.
-export type DailyEntry = {
-  weightKg?: string;
-  steps?: string;
-  sleepHours?: string;
-};
+export type TrackerId = "weight" | "steps" | "sleep";
+
+// Each tracked number carries its own comment, the same way a habit slider
+// does, so the three cards behave identically.
+export type TrackerEntry = { value: string; comment: string };
+
+export type DailyEntry = Partial<Record<TrackerId, TrackerEntry>>;
 
 type LogStore = Record<string, DailyEntry>;
+
+const EMPTY: TrackerEntry = { value: "", comment: "" };
 
 export function todayKey(): string {
   const d = new Date();
@@ -30,6 +32,8 @@ function readStore(): LogStore {
   }
 }
 
+// Everything tracked once a day that isn't a habit slider, keyed by real
+// calendar date so each new day starts blank on its own.
 export function useDailyLog() {
   const [store, setStore] = useState<LogStore>({});
   const [hydrated, setHydrated] = useState(false);
@@ -48,24 +52,31 @@ export function useDailyLog() {
     }
   }, [store, hydrated]);
 
-  const entryFor = useCallback((key: string): DailyEntry => store[key] ?? {}, [store]);
+  const trackerFor = useCallback(
+    (key: string, id: TrackerId): TrackerEntry => store[key]?.[id] ?? EMPTY,
+    [store],
+  );
 
-  const write = useCallback((key: string, patch: Partial<DailyEntry>) => {
-    setStore((prev) => ({ ...prev, [key]: { ...(prev[key] ?? {}), ...patch } }));
+  const write = useCallback((key: string, id: TrackerId, patch: Partial<TrackerEntry>) => {
+    setStore((prev) => ({
+      ...prev,
+      [key]: { ...(prev[key] ?? {}), [id]: { ...(prev[key]?.[id] ?? EMPTY), ...patch } },
+    }));
   }, []);
 
-  // The most recent day before this one that has a weight on it, which is
-  // what any change is measured against.
-  const previousWeight = useCallback(
-    (key: string): { date: string; weightKg: string } | null => {
+  // The most recent earlier day carrying a value, which is what any change is
+  // measured against.
+  const previousValue = useCallback(
+    (key: string, id: TrackerId): { date: string; value: string } | null => {
       const earlier = Object.entries(store)
-        .filter(([date, entry]) => date < key && entry.weightKg?.trim())
+        .filter(([date, entry]) => date < key && entry[id]?.value.trim())
         .sort(([a], [b]) => b.localeCompare(a));
       const [date, entry] = earlier[0] ?? [];
-      return date && entry?.weightKg ? { date, weightKg: entry.weightKg } : null;
+      const value = entry?.[id]?.value;
+      return date && value ? { date, value } : null;
     },
     [store],
   );
 
-  return { hydrated, entryFor, write, previousWeight };
+  return { hydrated, trackerFor, write, previousValue };
 }

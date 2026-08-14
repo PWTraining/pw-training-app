@@ -47,11 +47,7 @@ export function CoachNote({ note, day = TODAY_INDEX }: { note: string; day?: num
       style={{ background: "var(--color-note)", borderColor: "var(--color-brand-red)" }}
     >
       <div className="mb-2 flex items-center gap-2.5">
-        <span
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-base"
-          style={{ background: "var(--color-brand-red)" }}
-          aria-hidden
-        >
+        <span className="text-lg leading-none" aria-hidden>
           ❗
         </span>
         <div className="text-sm font-bold" style={{ color: "var(--color-text)" }}>
@@ -120,7 +116,7 @@ export function CoachNote({ note, day = TODAY_INDEX }: { note: string; day?: num
               className="text-xs font-semibold"
               style={{ color: "var(--color-brand)" }}
             >
-              {reply ? "Edit your note" : "Leave a note"}
+              {reply ? "Edit your response" : "Respond"}
             </button>
           </>
         )}

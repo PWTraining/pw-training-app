@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { TopBar } from "@/components/top-bar";
 import { HabitGrid } from "@/components/habit-grid";
@@ -24,10 +24,24 @@ import {
 const LIST_TIMEFRAMES: Timeframe[] = ["Daily", "Weekly", "Monthly", "Yearly"];
 const LIST_TIMEFRAME_LABELS = { Daily: "Today", Weekly: "Week", Monthly: "Block", Yearly: "Year" };
 
+const TIMEFRAME_KEY = "pw-progress-timeframe";
+
 export default function ProgressPage() {
   const { habits, todayValue } = useHabits();
   const [addOpen, setAddOpen] = useState(false);
   const [timeframe, setTimeframe] = useState<Timeframe>("Weekly");
+
+  // Opening a day and coming back should land on the same view you left, not
+  // reset to Week. Session storage, so it doesn't outlive the app being open.
+  useEffect(() => {
+    const stored = window.sessionStorage.getItem(TIMEFRAME_KEY);
+    if (stored) setTimeframe(stored as Timeframe);
+  }, []);
+
+  function chooseTimeframe(next: Timeframe) {
+    setTimeframe(next);
+    window.sessionStorage.setItem(TIMEFRAME_KEY, next);
+  }
 
   const activeHabits = useMemo(() => habits.filter((h) => !h.archived), [habits]);
 
@@ -69,12 +83,12 @@ export default function ProgressPage() {
         <ProgramAdherence
           values={adherenceValues}
           timeframe={timeframe}
-          onTimeframeChange={setTimeframe}
+          onTimeframeChange={chooseTimeframe}
           timeframes={LIST_TIMEFRAMES}
           labels={LIST_TIMEFRAME_LABELS}
         />
 
-        <MonthCalendar timeframe={timeframe} />
+        <MonthCalendar />
 
         <SectionDivider label="Habit Tracker" />
 
@@ -83,10 +97,9 @@ export default function ProgressPage() {
             const habitPct = Math.round(periodPct(habit.id, timeframe, todayValue(habit.id)));
 
             return (
-              <Link
+              <div
                 key={habit.id}
-                href={`/progress/${habit.id}`}
-                className="block rounded-[var(--radius-md)] border px-3 py-2"
+                className="rounded-[var(--radius-md)] border px-3 py-2"
                 style={{ borderColor: "var(--color-border)", background: "var(--color-surface)" }}
               >
                 <div className="mb-1.5 flex items-center gap-2.5">
@@ -99,9 +112,6 @@ export default function ProgressPage() {
                   >
                     {habit.label}
                   </span>
-                  <span className="text-xs font-medium" style={{ color: "var(--color-brand)" }}>
-                    View &rsaquo;
-                  </span>
                   <span
                     className="w-10 text-right text-sm font-semibold tabular-nums"
                     style={{ color: adherenceColor(habitPct) }}
@@ -110,7 +120,19 @@ export default function ProgressPage() {
                   </span>
                 </div>
                 <HabitGrid habitId={habit.id} todayValue={todayValue(habit.id)} period={timeframe} />
-              </Link>
+                {/* Same control in the same corner as the check-in rows on
+                    Home, so it's one icon to learn rather than two. */}
+                <div className="mt-0.5 flex">
+                  <Link
+                    href={`/progress/${habit.id}`}
+                    aria-label={`About ${habit.label}`}
+                    className="-ml-2 flex h-10 w-10 items-center justify-center rounded-full text-lg"
+                    style={{ color: "var(--color-text-muted)" }}
+                  >
+                    ⓘ
+                  </Link>
+                </div>
+              </div>
             );
           })}
 

@@ -50,6 +50,12 @@ export function SessionView({ dateKey }: { dateKey: string }) {
         <div className="text-lg font-bold" style={{ color: "var(--color-text)" }}>
           {day.session ? day.session.title : "Rest day"}
         </div>
+        {/* Coach's note on the session, written per day. */}
+        {day.session?.note && (
+          <p className="mt-0.5 text-xs leading-relaxed" style={{ color: "var(--color-text-muted)" }}>
+            {day.session.note}
+          </p>
+        )}
       </div>
 
       {!day.session ? (

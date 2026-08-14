@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { adherenceColor, sliderFill, TODAY_INDEX } from "@/lib/habits";
 import { useHabits } from "@/lib/habits-context";
+import { useScrollLock } from "@/lib/scroll-lock";
 
 // Matches the thumb width in globals.css. The thumb's centre can only reach
 // half a thumb in from each end, so that's the range a touch maps onto.
@@ -46,6 +47,10 @@ export function CheckInRow({
   const slider = useRef<HTMLInputElement>(null);
   const dragging = useRef(false);
   const fill = adherenceColor(value);
+
+  // While the description is open the page behind it holds still, and the
+  // only thing that moves is the text itself.
+  useScrollLock(whyOpen);
 
   // Touching the track anywhere jumps the value to that spot and keeps
   // following the finger, so setting a value is one movement rather than

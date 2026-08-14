@@ -9,8 +9,7 @@ import { DailyReflection } from "@/components/daily-reflection";
 import { Moments } from "@/components/moments";
 import { ProgramAdherence } from "@/components/program-adherence";
 import { CoachNote } from "@/components/coach-note";
-import { WeightTracker } from "@/components/weight-tracker";
-import { StepsAndSleep } from "@/components/steps-sleep";
+import { TrackerCard } from "@/components/tracker-card";
 import { useHabits } from "@/lib/habits-context";
 import { useTrainLog } from "@/lib/train-log";
 import { MOCK_TRAINING_PCT, MOCK_COACH_COMMENT, weeklyPct, type Timeframe } from "@/lib/habits";
@@ -117,11 +116,13 @@ export default function HomePage() {
 
         <Moments />
 
-        {/* The rest of what gets logged each day, kept below the check-in
-            because it's numbers to enter rather than a scale to set. */}
-        <WeightTracker />
+        {/* The rest of what gets logged each day. One card each, all built
+            from the same component so they behave identically. */}
+        <TrackerCard id="weight" emoji="⚖️" label="Weight" unit="kg" placeholder="0.0" showChange />
 
-        <StepsAndSleep />
+        <TrackerCard id="steps" emoji="👟" label="Steps" placeholder="0" />
+
+        <TrackerCard id="sleep" emoji="😴" label="Sleep" unit="hrs" placeholder="0.0" />
 
       </div>
     </div>

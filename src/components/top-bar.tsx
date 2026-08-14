@@ -10,17 +10,14 @@ export function TopBar() {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Home is the one screen you can't have arrived at from somewhere else.
-  // Every other screen can be reached by tapping through — including the
-  // other tabs, e.g. Today's Session opening Train from Home — so they all
-  // keep a way back.
-  const showBack = pathname !== "/home";
+  // Each tab is its own starting point. The five tab roots have nothing above
+  // them, so they carry no back button; anything deeper goes back to the tab
+  // it belongs to rather than retracing however you got there.
+  const tabRoot = `/${pathname.split("/")[1] ?? ""}`;
+  const showBack = pathname !== tabRoot;
 
   function goBack() {
-    // A page opened cold (shared link, refresh, home-screen shortcut) has
-    // nothing to pop, so send those to Home rather than out of the app.
-    if (window.history.length > 1) router.back();
-    else router.push("/home");
+    router.push(tabRoot);
   }
 
   return (

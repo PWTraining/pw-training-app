@@ -128,16 +128,16 @@ export default function TrainPage() {
                   href={`/train/${day.key}`}
                   className="flex items-center gap-2.5 rounded-[var(--radius-md)] px-3 py-2 text-left"
                   style={{
-                    // Training days carry the fill, rest days are outlined
-                    // green so they still read as their own thing to tap.
-                    background: isTraining
-                      ? "color-mix(in srgb, var(--color-brand-yellow) 16%, var(--color-surface-raised))"
+                    // Only today is filled. Every other row is plain, with a
+                    // green outline marking the training days.
+                    background: isToday
+                      ? "color-mix(in srgb, var(--color-brand) 12%, var(--color-surface))"
                       : "var(--color-surface)",
                     border: isToday
                       ? "2px solid var(--color-brand)"
                       : isTraining
-                        ? "1px solid var(--color-brand-yellow)"
-                        : "1px solid color-mix(in srgb, var(--color-success) 50%, transparent)",
+                        ? "1px solid color-mix(in srgb, var(--color-success) 55%, transparent)"
+                        : "1px solid var(--color-border)",
                   }}
                 >
                   <div className="flex w-9 shrink-0 flex-col items-center">

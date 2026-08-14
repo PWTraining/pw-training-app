@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog } from "./confirm-dialog";
 import { downscale, photoId } from "@/lib/image";
+import { useScrollLock } from "@/lib/scroll-lock";
 
 const STORAGE_KEY = "pw-progress-photos";
 
@@ -397,6 +398,8 @@ function PhotoViewer({
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [confirmRemove, setConfirmRemove] = useState(false);
+
+  useScrollLock(true);
 
   // Live pointers, plus what the gesture started from. Refs rather than state
   // because these change on every move and must not trigger a render.

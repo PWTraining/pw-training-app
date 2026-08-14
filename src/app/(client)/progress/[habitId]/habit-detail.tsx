@@ -16,6 +16,7 @@ import {
   weeklyPct,
   periodPct,
   adherenceColor,
+  fullDate,
 } from "@/lib/habits";
 
 export function HabitDetail({ habitId }: { habitId: string }) {
@@ -32,6 +33,11 @@ export function HabitDetail({ habitId }: { habitId: string }) {
   const blockPct = Math.round(monthlyPct(habitId, today));
   const weekPct = Math.round(weeklyPct(habitId, today));
   const yearPct = Math.round(periodPct(habitId, "Yearly", today));
+
+  const sortedComments = useMemo(
+    () => [...comments].filter((c) => c.text.trim()).sort((a, b) => b.day - a.day),
+    [comments],
+  );
 
   const completions = useMemo(() => {
     const values = [...loggedDays.slice(0, TODAY_INDEX), today];
@@ -233,6 +239,46 @@ export function HabitDetail({ habitId }: { habitId: string }) {
           />
         </section>
 
+        {/* Everything written against this habit, newest first, so the
+            numbers above have the story that goes with them. */}
+        <section
+          className="rounded-[var(--radius-lg)] border p-4"
+          style={{ borderColor: "var(--color-border)" }}
+        >
+          <h2 className="mb-3 text-sm font-bold" style={{ color: "var(--color-text)" }}>
+            Comments
+          </h2>
+
+          {sortedComments.length === 0 ? (
+            <p className="text-xs italic" style={{ color: "var(--color-text-muted)" }}>
+              Nothing written on this habit yet.
+            </p>
+          ) : (
+            <ol className="flex flex-col">
+              {sortedComments.map((comment, i) => (
+                <li
+                  key={`${comment.day}-${i}`}
+                  className="py-2.5"
+                  style={{ borderTop: i === 0 ? "none" : "1px solid var(--color-border)" }}
+                >
+                  <div
+                    className="text-[11px] font-bold uppercase tracking-wide"
+                    style={{ color: "var(--color-text-muted)" }}
+                    suppressHydrationWarning
+                  >
+                    {fullDate(comment.day)}
+                  </div>
+                  <p
+                    className="mt-1 text-sm leading-relaxed"
+                    style={{ color: "var(--color-text)" }}
+                  >
+                    {comment.text}
+                  </p>
+                </li>
+              ))}
+            </ol>
+          )}
+        </section>
       </div>
     </div>
   );

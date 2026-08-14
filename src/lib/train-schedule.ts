@@ -3,17 +3,34 @@
 // from the day of the week, and completion status from a stable hash of
 // the date — same approach as the habits mocks (mockDayValue).
 
-export type DaySessionInfo = { title: string; exerciseCount: number } | null;
+export type DaySessionInfo = {
+  title: string;
+  exerciseCount: number;
+  // Short note on the session, written per day on the coaching side.
+  note?: string;
+} | null;
 
 // index 0 = Sunday .. 6 = Saturday. 3 full-body sessions a week — Mon/Wed/Fri
 // — with rest days in between.
 export const WEEKLY_SESSION_PLAN: DaySessionInfo[] = [
   null,
-  { title: "Full Body", exerciseCount: 3 },
+  {
+    title: "Full Body",
+    exerciseCount: 3,
+    note: "Leave two reps in the tank on the squats. Control the way down on everything.",
+  },
   null,
-  { title: "Full Body", exerciseCount: 3 },
+  {
+    title: "Full Body",
+    exerciseCount: 3,
+    note: "Leave two reps in the tank on the squats. Control the way down on everything.",
+  },
   null,
-  { title: "Full Body", exerciseCount: 3 },
+  {
+    title: "Full Body",
+    exerciseCount: 3,
+    note: "Leave two reps in the tank on the squats. Control the way down on everything.",
+  },
   null,
 ];
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { useScrollLock } from "@/lib/scroll-lock";
+
 // One confirmation for every destructive action in the app, so nothing is
 // ever a single tap away from being gone.
 export function ConfirmDialog({
@@ -17,6 +19,8 @@ export function ConfirmDialog({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  useScrollLock(open);
+
   if (!open) return null;
 
   return (

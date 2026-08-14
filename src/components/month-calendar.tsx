@@ -2,22 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { BLOCK_LENGTH, TODAY_INDEX, type Timeframe } from "@/lib/habits";
+import { TODAY_INDEX } from "@/lib/habits";
 import { useHabits } from "@/lib/habits-context";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const DAY_MS = 86_400_000;
 
-// Which block days the timeframe toggle above the calendar is covering, so
-// the month view reflects the same range the adherence figure is built from.
-function rangeFor(timeframe: Timeframe): [number, number] {
-  if (timeframe === "Daily") return [TODAY_INDEX, TODAY_INDEX];
-  if (timeframe === "Weekly") return [TODAY_INDEX - 6, TODAY_INDEX];
-  if (timeframe === "Monthly") return [0, BLOCK_LENGTH - 1];
-  return [-364, BLOCK_LENGTH - 1];
-}
-
-export function MonthCalendar({ timeframe }: { timeframe: Timeframe }) {
+// The calendar is a calendar. The Today/Week/Block/Year toggle above it
+// changes the figures underneath, and this stays exactly as it is.
+export function MonthCalendar() {
   const { isDayClosed } = useHabits();
   const [monthOffset, setMonthOffset] = useState(0);
   // Today is only knowable on the client, so the grid renders after mount
@@ -47,8 +40,6 @@ export function MonthCalendar({ timeframe }: { timeframe: Timeframe }) {
 
     return { label, leadingBlanks, days };
   }, [monthOffset]);
-
-  const [rangeStart, rangeEnd] = rangeFor(timeframe);
 
   return (
     <section
@@ -109,7 +100,6 @@ export function MonthCalendar({ timeframe }: { timeframe: Timeframe }) {
           {view.days.map(({ dayOfMonth, blockIndex }) => {
             const isToday = blockIndex === TODAY_INDEX;
             const isFuture = blockIndex > TODAY_INDEX;
-            const inRange = blockIndex >= rangeStart && blockIndex <= rangeEnd;
             // A day the client has finished and saved gets a tick; today
             // stays open, so it never claims to be done.
             const done = !isFuture && !isToday && isDayClosed(blockIndex);
@@ -122,15 +112,13 @@ export function MonthCalendar({ timeframe }: { timeframe: Timeframe }) {
                     ? "var(--color-brand)"
                     : done
                       ? "color-mix(in srgb, var(--color-success) 45%, transparent)"
-                      : inRange
-                        ? "color-mix(in srgb, var(--color-brand) 35%, var(--color-border))"
-                        : "var(--color-border)",
+                      : "var(--color-border)",
                   borderWidth: isToday ? 2 : 1,
                   background: done
                     ? "color-mix(in srgb, var(--color-success) 12%, var(--color-surface))"
                     : "var(--color-surface)",
                   color: "var(--color-text)",
-                  opacity: isFuture ? 0.3 : inRange ? 1 : 0.55,
+                  opacity: isFuture ? 0.3 : 1,
                 }}
               >
                 {dayOfMonth}

@@ -20,6 +20,9 @@ export function PullToRefresh({ children }: { children: React.ReactNode }) {
     function onStart(e: TouchEvent) {
       // Only a drag that begins at the very top is a refresh. Anywhere else
       // is ordinary scrolling and must be left alone.
+      // A modal pins the body at scroll zero, which would otherwise look
+      // exactly like being at the top of the page.
+      if (document.documentElement.dataset.scrollLocked) return;
       if (window.scrollY > 0 || refreshing) return;
       startY.current = e.touches[0].clientY;
       active.current = true;

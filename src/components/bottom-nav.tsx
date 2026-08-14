@@ -6,7 +6,9 @@ import { usePathname } from "next/navigation";
 const TABS = [
   { href: "/home", label: "Home", icon: "⌂" },
   { href: "/train", label: "Train", icon: "🏋" },
-  { href: "/progress", label: "Progress", icon: "✓" },
+  // Route stays /progress so existing links keep working; the tab is named
+  // for what's actually on it.
+  { href: "/progress", label: "Habits", icon: "✓" },
   { href: "/chat", label: "Chat", icon: "💬" },
   { href: "/profile", label: "Profile", icon: "👤" },
 ] as const;
@@ -22,7 +24,9 @@ export function BottomNav() {
         background: "color-mix(in srgb, var(--color-surface) 92%, transparent)",
       }}
     >
-      <div className="mx-auto flex max-w-md items-end pb-[env(safe-area-inset-bottom)]">
+      {/* Extra padding under the labels so they aren't sitting on the edge of
+          the screen, on top of whatever the device reserves for itself. */}
+      <div className="mx-auto flex max-w-md items-end pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-1">
         {TABS.map((tab) => {
           const active = pathname.startsWith(tab.href);
 
