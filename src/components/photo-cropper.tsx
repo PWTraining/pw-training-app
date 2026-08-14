@@ -21,11 +21,31 @@ export function PhotoCropper({
   useScrollLock(true);
 
   const frame = useRef<HTMLDivElement>(null);
+  const frameArea = useRef<HTMLDivElement>(null);
   const image = useRef<HTMLImageElement>(null);
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [frameSize, setFrameSize] = useState({ w: 0, h: 0 });
+
+  // The largest 3:4 box that fits the space available, recalculated if the
+  // window turns or resizes.
+  useEffect(() => {
+    const area = frameArea.current;
+    if (!area) return;
+
+    const measure = () => {
+      const { width, height } = area.getBoundingClientRect();
+      const h = Math.min(height, (width * OUT_H) / OUT_W);
+      setFrameSize({ w: Math.round((h * OUT_W) / OUT_H), h: Math.round(h) });
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(area);
+    return () => observer.disconnect();
+  }, []);
 
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const start = useRef({ dist: 0, scale: 1, mid: { x: 0, y: 0 }, offset: { x: 0, y: 0 } });
@@ -157,16 +177,18 @@ export function PhotoCropper({
 
         {/* The window itself: everything outside it is dimmed by the ring
             shadow, so what you keep is obvious without masking the image. */}
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
-          {/* Height first, width derived from it, then clamped if the screen
-              is narrower. Aspect ratio alone gives an auto-width flex item
-              nothing to work from and the box collapses. */}
+        {/* Measured rather than left to CSS: aspect-ratio plus a max in one
+            direction keeps the other dimension, so the box comes out the
+            wrong shape. These two numbers are always exactly 3:4. */}
+        <div
+          ref={frameArea}
+          className="pointer-events-none absolute inset-0 flex items-center justify-center p-6"
+        >
           <div
             ref={frame}
             style={{
-              height: "100%",
-              maxWidth: "100%",
-              aspectRatio: "3 / 4",
+              width: frameSize.w,
+              height: frameSize.h,
               boxShadow: "0 0 0 9999px rgba(0,0,0,0.55)",
               outline: "2px solid rgba(255,255,255,0.9)",
             }}
