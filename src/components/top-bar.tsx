@@ -10,14 +10,17 @@ export function TopBar() {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Each tab is its own starting point. The five tab roots have nothing above
-  // them, so they carry no back button; anything deeper goes back to the tab
-  // it belongs to rather than retracing however you got there.
+  // The five tab roots are starting points and carry no back button. Anywhere
+  // deeper goes back exactly one step, so a chain like Profile, Documents, a
+  // document unwinds one page at a time instead of jumping to the top.
   const tabRoot = `/${pathname.split("/")[1] ?? ""}`;
   const showBack = pathname !== tabRoot;
 
   function goBack() {
-    router.push(tabRoot);
+    // Opened cold from a shortcut or a refresh, there's nothing to step back
+    // to, so fall back to the tab this page belongs to.
+    if (window.history.length > 1) router.back();
+    else router.push(tabRoot);
   }
 
   return (

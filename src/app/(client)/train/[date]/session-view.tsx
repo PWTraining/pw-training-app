@@ -68,7 +68,7 @@ export function SessionView({ dateKey }: { dateKey: string }) {
               ☯️
             </span>
             <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
-              Nothing programmed. Take the day.
+              Nothing programmed.
             </p>
           </div>
         </div>

@@ -30,9 +30,11 @@ export function ProgramAdherence({
         <h2 className="text-base font-bold" style={{ color: "var(--color-text)" }}>
           Adherence
         </h2>
+        {/* Full finger height. The card has the room, so the targets may as
+            well use it rather than being 20px tall. */}
         {timeframes.length > 1 && (
           <div
-            className="flex gap-0.5 rounded-full border p-0.5"
+            className="flex gap-0.5 rounded-full border p-1"
             style={{ borderColor: "var(--color-border)" }}
           >
             {timeframes.map((tf) => (
@@ -40,7 +42,7 @@ export function ProgramAdherence({
                 key={tf}
                 type="button"
                 onClick={() => onTimeframeChange(tf)}
-                className="rounded-full px-2 py-1 text-[10px] font-medium"
+                className="flex h-9 items-center rounded-full px-3 text-xs font-semibold"
                 style={{
                   background: timeframe === tf ? "var(--color-brand)" : "transparent",
                   color:

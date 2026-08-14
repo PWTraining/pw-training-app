@@ -107,16 +107,19 @@ export function CoachNote({ note, day = TODAY_INDEX }: { note: string; day?: num
                 {reply}
               </p>
             )}
+            {/* A real button rather than a link: replying is a thing you do,
+                and the box only appears once you've said you want it. */}
             <button
               type="button"
               onClick={() => {
                 setDraft(reply);
                 setEditing(true);
               }}
-              className="text-xs font-semibold"
-              style={{ color: "var(--color-brand)" }}
+              className="flex w-full items-center justify-center gap-1.5 rounded-[var(--radius-md)] py-2.5 text-sm font-semibold"
+              style={{ background: "var(--color-brand)", color: "var(--color-brand-contrast)" }}
             >
-              {reply ? "Edit your response" : "Respond"}
+              <span aria-hidden>💬</span>
+              {reply ? "Edit your response" : "Respond to note"}
             </button>
           </>
         )}

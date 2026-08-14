@@ -169,9 +169,10 @@ export function CheckInRow({
           <span />
         )}
 
+        {/* Comments stay open on a saved day. Writing one doesn't touch a
+            score, so it never needs the day reopened first. */}
         <button
           type="button"
-          disabled={readOnly && !saved}
           onClick={() => (open ? setOpen(false) : startEditing())}
           aria-label={saved ? `Edit your comment on ${label}` : `Leave a comment on ${label}`}
           className="-mr-2 flex h-10 w-10 items-center justify-center rounded-full text-lg"
@@ -181,18 +182,20 @@ export function CheckInRow({
         </button>
       </div>
 
-      {/* A saved comment just sits there as text. Changing it is the comment
-          button again, so there's no second control saying the same thing. */}
+      {/* A saved comment sits there as text with no Edit label beside it.
+          Tapping the text, or the bubble, opens it again. */}
       {saved && !open && (
-        <p
-          className="mt-2 rounded-[var(--radius-sm)] px-2.5 py-1.5 text-xs"
+        <button
+          type="button"
+          onClick={startEditing}
+          className="mt-2 block w-full rounded-[var(--radius-sm)] px-2.5 py-1.5 text-left text-xs"
           style={{
             background: "color-mix(in srgb, var(--color-brand) 6%, var(--color-surface))",
             color: "var(--color-text)",
           }}
         >
           {saved}
-        </p>
+        </button>
       )}
 
       {/* Centred, and only as tall as the text needs. Long entries scroll
@@ -256,7 +259,7 @@ export function CheckInRow({
         </div>
       )}
 
-      {open && !readOnly && (
+      {open && (
         <div className="mt-2 flex flex-col gap-2">
           <textarea
             value={draft}
