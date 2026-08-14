@@ -1,8 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ConfirmDialog } from "./confirm-dialog";
 
-export type Stat = { id: string; label: string; value: string };
+export type Stat = {
+  id: string;
+  label: string;
+  value: string;
+  // Fixed unit for this row. The client types the number, the unit stays put.
+  unit?: string;
+  // Turns the row into a pick-one instead of free text.
+  options?: string[];
+};
 
 // Rows on the Profile sub-pages are the client's own, so they persist per
 // page key alongside the rest of the app's local state.
@@ -39,20 +48,16 @@ export function EditableStats({
 }) {
   const [stats, setStats] = useStoredStats(storageKey, defaults);
   const [editing, setEditing] = useState(false);
+  const [pendingRemove, setPendingRemove] = useState<Stat | null>(null);
 
   function update(id: string, patch: Partial<Stat>) {
     setStats((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
   }
 
-  function remove(id: string) {
-    setStats((prev) => prev.filter((s) => s.id !== id));
-  }
-
   function add() {
-    setStats((prev) => [
-      ...prev,
-      { id: `row-${Date.now()}`, label: "New entry", value: "-" },
-    ]);
+    // Empty rather than a placeholder dash: a dash has to be deleted before
+    // anything can be typed.
+    setStats((prev) => [...prev, { id: `row-${Date.now()}`, label: "", value: "" }]);
   }
 
   return (
@@ -84,6 +89,7 @@ export function EditableStats({
                   type="text"
                   value={stat.label}
                   onChange={(e) => update(stat.id, { label: e.target.value })}
+                  placeholder="Name"
                   aria-label="Name"
                   className="min-w-0 flex-1 rounded-[var(--radius-sm)] border px-2 py-1 text-sm outline-none"
                   style={{
@@ -92,22 +98,55 @@ export function EditableStats({
                     color: "var(--color-text)",
                   }}
                 />
-                <input
-                  type="text"
-                  value={stat.value}
-                  onChange={(e) => update(stat.id, { value: e.target.value })}
-                  aria-label={`${stat.label} value`}
-                  className="w-28 shrink-0 rounded-[var(--radius-sm)] border px-2 py-1 text-right text-sm outline-none"
-                  style={{
-                    borderColor: "var(--color-border)",
-                    background: "var(--color-bg)",
-                    color: "var(--color-text)",
-                  }}
-                />
+
+                {stat.options ? (
+                  <select
+                    value={stat.value}
+                    onChange={(e) => update(stat.id, { value: e.target.value })}
+                    aria-label={`${stat.label} value`}
+                    className="w-32 shrink-0 rounded-[var(--radius-sm)] border px-2 py-1 text-sm outline-none"
+                    style={{
+                      borderColor: "var(--color-border)",
+                      background: "var(--color-bg)",
+                      color: "var(--color-text)",
+                    }}
+                  >
+                    {stat.options.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <span className="flex shrink-0 items-center gap-1">
+                    <input
+                      type="text"
+                      inputMode={stat.unit ? "decimal" : "text"}
+                      value={stat.value}
+                      onChange={(e) => update(stat.id, { value: e.target.value })}
+                      aria-label={`${stat.label} value`}
+                      className="w-20 rounded-[var(--radius-sm)] border px-2 py-1 text-right text-sm outline-none"
+                      style={{
+                        borderColor: "var(--color-border)",
+                        background: "var(--color-bg)",
+                        color: "var(--color-text)",
+                      }}
+                    />
+                    {stat.unit && (
+                      <span
+                        className="w-6 text-left text-sm"
+                        style={{ color: "var(--color-text-muted)" }}
+                      >
+                        {stat.unit}
+                      </span>
+                    )}
+                  </span>
+                )}
+
                 <button
                   type="button"
-                  onClick={() => remove(stat.id)}
-                  aria-label={`Remove ${stat.label}`}
+                  onClick={() => setPendingRemove(stat)}
+                  aria-label={`Remove ${stat.label || "row"}`}
                   className="shrink-0 px-1 text-lg"
                   style={{ color: "var(--color-danger)" }}
                 >
@@ -124,6 +163,7 @@ export function EditableStats({
                   style={{ color: "var(--color-text)" }}
                 >
                   {stat.value}
+                  {stat.unit}
                 </span>
               </>
             )}
@@ -147,6 +187,21 @@ export function EditableStats({
           {addLabel}
         </button>
       )}
+
+      <ConfirmDialog
+        open={!!pendingRemove}
+        title="Delete this entry?"
+        body={
+          pendingRemove?.label
+            ? `"${pendingRemove.label}" will be removed.`
+            : "This row will be removed."
+        }
+        onCancel={() => setPendingRemove(null)}
+        onConfirm={() => {
+          setStats((prev) => prev.filter((s) => s.id !== pendingRemove?.id));
+          setPendingRemove(null);
+        }}
+      />
     </>
   );
 }

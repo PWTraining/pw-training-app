@@ -37,9 +37,6 @@ type Weather = {
   label: string;
   place: string;
   summary: string;
-  highC: number;
-  lowC: number;
-  rainChance: number;
 };
 
 // The worst code in a stretch of hours is what people remember about it, so
@@ -49,11 +46,9 @@ function dominantCode(codes: number[]): number | null {
   return codes.reduce((worst, code) => (code > worst ? code : worst), codes[0]);
 }
 
-// Turns the raw numbers into the sentence you'd actually say: what the day is
-// like overall, and the part of it that's different.
+// Reads the day out in the order it happens: what the morning is doing, then
+// the afternoon if it's different, then the evening if that changes again.
 function buildSummary(dayCode: number, hourlyCodes: number[], hours: number[]): string {
-  const dayLabel = describeWeather(dayCode).label;
-
   const at = (from: number, to: number) =>
     dominantCode(hourlyCodes.filter((_, i) => hours[i] >= from && hours[i] < to));
 
@@ -61,19 +56,22 @@ function buildSummary(dayCode: number, hourlyCodes: number[], hours: number[]): 
   const afternoon = at(12, 18);
   const evening = at(18, 22);
 
-  // Only worth naming a part of the day when it's meaningfully worse than
-  // the rest of it. Otherwise the sentence just repeats itself.
-  const parts: string[] = [];
-  if (afternoon !== null && morning !== null && afternoon > morning + 1) {
-    parts.push(`afternoon ${describeWeather(afternoon).label}`);
-  } else if (morning !== null && afternoon !== null && morning > afternoon + 1) {
-    parts.push(`morning ${describeWeather(morning).label}`);
-  }
-  if (evening !== null && afternoon !== null && evening > afternoon + 1) {
-    parts.push(`${describeWeather(evening).label} into the evening`);
+  if (morning === null || afternoon === null) {
+    const label = describeWeather(dayCode).label;
+    return label.charAt(0).toUpperCase() + label.slice(1);
   }
 
-  const sentence = parts.length ? `${dayLabel} with ${parts.join(", then ")}` : dayLabel;
+  let sentence = `${describeWeather(morning).label} morning`;
+
+  // Only name a later part of the day when it's actually doing something
+  // else. Repeating the same word twice reads like filler.
+  if (Math.abs(afternoon - morning) > 1) {
+    sentence += ` with afternoon ${describeWeather(afternoon).label}`;
+  }
+  if (evening !== null && Math.abs(evening - afternoon) > 1) {
+    sentence += `, ${describeWeather(evening).label} into the evening`;
+  }
+
   return sentence.charAt(0).toUpperCase() + sentence.slice(1);
 }
 
@@ -83,8 +81,7 @@ async function fetchWeather(latitude: number, longitude: number): Promise<Weathe
   const [weatherRes, placeRes] = await Promise.all([
     fetch(
       `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}` +
-        `&current=temperature_2m,weather_code&hourly=weather_code` +
-        `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max` +
+        `&current=temperature_2m,weather_code&hourly=weather_code&daily=weather_code` +
         `&forecast_days=1&timezone=auto`,
     ),
     fetch(
@@ -104,9 +101,6 @@ async function fetchWeather(latitude: number, longitude: number): Promise<Weathe
     ...describeWeather(weather.current.weather_code),
     place: place.city || place.locality || place.principalSubdivision || "Your area",
     summary: buildSummary(dayCode, weather.hourly?.weather_code ?? [], hours),
-    highC: Math.round(weather.daily?.temperature_2m_max?.[0] ?? weather.current.temperature_2m),
-    lowC: Math.round(weather.daily?.temperature_2m_min?.[0] ?? weather.current.temperature_2m),
-    rainChance: Math.round(weather.daily?.precipitation_probability_max?.[0] ?? 0),
   };
 }
 
@@ -233,11 +227,7 @@ export function WeatherHeader({ children }: { children: React.ReactNode }) {
             {weather.place} <span aria-hidden>📍</span>
           </div>
           <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--color-text)" }}>
-            {weather.summary}.
-          </p>
-          <p className="mt-1.5 text-xs tabular-nums" style={{ color: "var(--color-text-muted)" }}>
-            {weather.lowC}&deg; to {weather.highC}&deg; &middot; {weather.rainChance}% chance of
-            rain &middot; {weather.tempC}&deg; right now
+            <span className="tabular-nums">{weather.tempC}&deg;</span>, {weather.summary}.
           </p>
         </div>
       )}

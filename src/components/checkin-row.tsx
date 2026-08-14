@@ -1,8 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { adherenceColor, sliderFill, TODAY_INDEX } from "@/lib/habits";
 import { useHabits } from "@/lib/habits-context";
+
+// Matches the thumb width in globals.css. The thumb's centre can only reach
+// half a thumb in from each end, so that's the range a touch maps onto.
+const THUMB = 22;
+const STEP = 10;
 
 export function CheckInRow({
   id,
@@ -38,7 +43,27 @@ export function CheckInRow({
   const [whyOpen, setWhyOpen] = useState(false);
   const [draft, setDraft] = useState(saved);
 
+  const slider = useRef<HTMLInputElement>(null);
   const fill = adherenceColor(value);
+
+  // Touching the track anywhere jumps the value to that spot and keeps
+  // following the finger, so setting a value is one movement rather than
+  // find-the-dot then drag it.
+  function valueAt(clientX: number) {
+    const el = slider.current;
+    if (!el) return value;
+    const rect = el.getBoundingClientRect();
+    const usable = rect.width - THUMB;
+    const ratio = usable > 0 ? (clientX - rect.left - THUMB / 2) / usable : 0;
+    const clamped = Math.min(1, Math.max(0, ratio));
+    return Math.round((clamped * 100) / STEP) * STEP;
+  }
+
+  function trackPointer(e: React.PointerEvent<HTMLInputElement>) {
+    if (readOnly) return;
+    const next = valueAt(e.clientX);
+    if (next !== value) onChange(next);
+  }
 
   function startEditing() {
     setDraft(saved);
@@ -73,13 +98,23 @@ export function CheckInRow({
       </div>
 
       <input
+        ref={slider}
         type="range"
         className="slider"
         min={0}
         max={100}
-        step={10}
+        step={STEP}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
+        onPointerDown={(e) => {
+          if (readOnly) return;
+          e.currentTarget.setPointerCapture(e.pointerId);
+          trackPointer(e);
+        }}
+        onPointerMove={(e) => {
+          if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
+          trackPointer(e);
+        }}
         disabled={readOnly}
         aria-label={label}
         style={{ "--slider-fill": sliderFill(value) } as React.CSSProperties}
@@ -124,9 +159,9 @@ export function CheckInRow({
         </button>
       </div>
 
-      {/* The saved comment reads as plain text until tapped, so a past day
-          shows as a snapshot rather than a form. */}
-      {saved && !open && readOnly && (
+      {/* A saved comment just sits there as text. Changing it is the comment
+          button again, so there's no second control saying the same thing. */}
+      {saved && !open && (
         <p
           className="mt-2 rounded-[var(--radius-sm)] px-2.5 py-1.5 text-xs"
           style={{
@@ -136,23 +171,6 @@ export function CheckInRow({
         >
           {saved}
         </p>
-      )}
-
-      {saved && !open && !readOnly && (
-        <button
-          type="button"
-          onClick={startEditing}
-          className="mt-2 w-full rounded-[var(--radius-sm)] px-2.5 py-1.5 text-left text-xs"
-          style={{
-            background: "color-mix(in srgb, var(--color-brand) 6%, var(--color-surface))",
-            color: "var(--color-text)",
-          }}
-        >
-          {saved}
-          <span className="ml-1.5 font-semibold" style={{ color: "var(--color-brand)" }}>
-            Edit
-          </span>
-        </button>
       )}
 
       {/* Centred, and only as tall as the text needs. Long entries scroll

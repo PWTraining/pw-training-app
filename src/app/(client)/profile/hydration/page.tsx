@@ -6,7 +6,6 @@ export default function HydrationPage() {
   return (
     <ProfileSubPage
       title="Hydration"
-      intro="How much to drink and when. Training days need more than rest days, so both are here."
     >
       <EditableStats
         storageKey="pw-profile-hydration"

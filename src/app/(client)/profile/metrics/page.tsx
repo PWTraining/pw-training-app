@@ -6,7 +6,6 @@ export default function MetricsPage() {
   return (
     <ProfileSubPage
       title="Metrics"
-      intro="Height, weight, measurements and body composition. Trends matter more than any single number."
     >
       <EditableStats
         storageKey="pw-profile-metrics"

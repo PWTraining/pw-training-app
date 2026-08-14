@@ -8,11 +8,32 @@ import { UndoButton } from "./undo-button";
 import { useHabits } from "@/lib/habits-context";
 import { TODAY_INDEX, MAX_ACTIVE_HABITS } from "@/lib/habits";
 
+// Unlike a habit's "why", these read the same for every client — they explain
+// what the slider is asking, not anything personal to the person moving it.
 export const MOOD_ENTRIES = [
-  { id: "mind", emoji: "🧠", label: "Mind" },
-  { id: "physical", emoji: "💪", label: "Body" },
-  { id: "spirit", emoji: "☮️", label: "Spirit" },
+  {
+    id: "mind",
+    emoji: "🧠",
+    label: "Mind",
+    why: "How your head felt today. Clear, focused and calm sits high. Foggy, scattered or stressed sits low.",
+  },
+  {
+    id: "physical",
+    emoji: "💪",
+    label: "Body",
+    why: "How your body felt today. Rested, strong and moving well sits high. Sore, heavy or run down sits low.",
+  },
+  {
+    id: "spirit",
+    emoji: "☮️",
+    label: "Spirit",
+    why: "How you felt in yourself today. Motivated and connected sits high. Flat or disconnected sits low.",
+  },
 ] as const;
+
+// Shown to a client who hasn't set their habits up yet, so the check-in has
+// something in it and it's obvious what to do next.
+const PLACEHOLDER_HABITS = ["Habit 1", "Habit 2", "Habit 3"];
 
 // The check-in controls, shared verbatim between Home (today) and the
 // Progress day view (any past day) so the two can't drift apart.
@@ -67,6 +88,29 @@ export function DayCheckIn({
               {atLimit ? `Habit limit reached (${MAX_ACTIVE_HABITS})` : "+ Add habit"}
             </button>
           </div>
+        ) : activeHabits.length === 0 ? (
+          <div className="mt-2 flex flex-col gap-2">
+            {PLACEHOLDER_HABITS.map((name) => (
+              <button
+                key={name}
+                type="button"
+                onClick={() => setAddOpen(true)}
+                disabled={readOnly}
+                className="flex items-center gap-3 rounded-[var(--radius-md)] border-2 border-dashed px-3 py-3 text-left disabled:opacity-50"
+                style={{ borderColor: "var(--color-border)" }}
+              >
+                <span className="text-xl leading-none" aria-hidden>
+                  ➕
+                </span>
+                <span className="flex-1 text-sm font-medium" style={{ color: "var(--color-text)" }}>
+                  {name}
+                </span>
+                <span className="text-xs font-semibold" style={{ color: "var(--color-brand)" }}>
+                  Set up
+                </span>
+              </button>
+            ))}
+          </div>
         ) : (
           activeHabits.map((habit, i) => (
             <CheckInRow
@@ -109,6 +153,7 @@ export function DayCheckIn({
             isLast={i === MOOD_ENTRIES.length - 1}
             day={day}
             readOnly={readOnly}
+            why={mood.why}
           />
         ))}
       </section>

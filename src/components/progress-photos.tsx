@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ConfirmDialog } from "./confirm-dialog";
 import { downscale, photoId } from "@/lib/image";
 
 const STORAGE_KEY = "pw-progress-photos";
@@ -142,10 +143,12 @@ export function ProgressPhotos() {
         </p>
       )}
 
+      {/* Named image types rather than image/*: on a phone that opens the
+          photo library instead of leading with the camera. */}
       <input
         ref={fileInput}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
         className="hidden"
         onChange={(e) => handleFile(e.target.files)}
       />
@@ -216,8 +219,7 @@ export function ProgressPhotos() {
           ))}
 
           <p className="text-xs italic" style={{ color: "var(--color-text-muted)" }}>
-            Tap an empty box to add that angle. Same pose, same light, same time of day makes them
-            worth comparing.
+            Tap an empty box to add that angle.
           </p>
         </div>
       ) : (
@@ -230,10 +232,6 @@ export function ProgressPhotos() {
           onClose={() => setViewing(null)}
           onRemove={() => {
             setPhotos((prev) => prev.filter((p) => p.id !== viewing.id));
-            setViewing(null);
-          }}
-          onReplace={() => {
-            pick(viewing.takenOn, viewing.pose);
             setViewing(null);
           }}
         />
@@ -383,85 +381,156 @@ function ComparePane({
   );
 }
 
-const ZOOM_STEPS = [1, 2, 3];
+const MAX_ZOOM = 5;
 
-// Full screen with tap-to-zoom. Scaling the image past the viewport and
-// letting the container scroll is what makes panning work on a phone.
+// Full screen, pinch to zoom and drag to move, the way the phone's own photo
+// viewer works. Double tap toggles between fit and 2.5x.
 function PhotoViewer({
   photo,
   onClose,
   onRemove,
-  onReplace,
 }: {
   photo: ProgressPhoto;
   onClose: () => void;
   onRemove: () => void;
-  onReplace: () => void;
 }) {
-  const [step, setStep] = useState(0);
-  const zoom = ZOOM_STEPS[step];
+  const [scale, setScale] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [confirmRemove, setConfirmRemove] = useState(false);
+
+  // Live pointers, plus what the gesture started from. Refs rather than state
+  // because these change on every move and must not trigger a render.
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
+  const start = useRef({ dist: 0, scale: 1, mid: { x: 0, y: 0 }, offset: { x: 0, y: 0 } });
+  const lastTap = useRef(0);
+
+  function centreAndSpread() {
+    const points = [...pointers.current.values()];
+    const mid = points.reduce(
+      (acc, p) => ({ x: acc.x + p.x / points.length, y: acc.y + p.y / points.length }),
+      { x: 0, y: 0 },
+    );
+    const dist =
+      points.length > 1 ? Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y) : 0;
+    return { mid, dist };
+  }
+
+  function beginGesture() {
+    const { mid, dist } = centreAndSpread();
+    start.current = { dist, scale, mid, offset };
+  }
+
+  function onPointerDown(e: React.PointerEvent) {
+    (e.target as Element).setPointerCapture?.(e.pointerId);
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    beginGesture();
+
+    // Double tap, measured the same way a phone does it.
+    if (pointers.current.size === 1) {
+      const now = Date.now();
+      if (now - lastTap.current < 300) {
+        setScale((s) => (s > 1 ? 1 : 2.5));
+        setOffset({ x: 0, y: 0 });
+        lastTap.current = 0;
+      } else {
+        lastTap.current = now;
+      }
+    }
+  }
+
+  function onPointerMove(e: React.PointerEvent) {
+    if (!pointers.current.has(e.pointerId)) return;
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    const { mid, dist } = centreAndSpread();
+
+    if (pointers.current.size > 1 && start.current.dist > 0) {
+      const next = Math.min(MAX_ZOOM, Math.max(1, start.current.scale * (dist / start.current.dist)));
+      setScale(next);
+      // Follow the fingers so the picture doesn't slide away from the pinch.
+      setOffset({
+        x: start.current.offset.x + (mid.x - start.current.mid.x),
+        y: start.current.offset.y + (mid.y - start.current.mid.y),
+      });
+    } else if (scale > 1) {
+      setOffset({
+        x: start.current.offset.x + (mid.x - start.current.mid.x),
+        y: start.current.offset.y + (mid.y - start.current.mid.y),
+      });
+    }
+  }
+
+  function onPointerUp(e: React.PointerEvent) {
+    pointers.current.delete(e.pointerId);
+    if (pointers.current.size > 0) {
+      beginGesture();
+      return;
+    }
+    // Back to fit means back to centred, so it can't be left off screen.
+    if (scale <= 1.02) {
+      setScale(1);
+      setOffset({ x: 0, y: 0 });
+    }
+  }
 
   return (
-    /* Fully opaque: at anything less, the page underneath shows through the
-       bars top and bottom. */
+    /* Fully opaque: at anything less, the page underneath shows through. */
     <div className="fixed inset-0 z-50 flex flex-col" style={{ background: "#000" }}>
       <div className="flex shrink-0 items-center justify-between px-3 py-2">
         <span className="text-sm font-semibold text-white">
           {POSE_LABEL[photo.pose]} &middot; {prettyDate(photo.takenOn)}
         </span>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close photo"
-          className="flex h-11 w-11 items-center justify-center text-2xl text-white"
-        >
-          &times;
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setConfirmRemove(true)}
+            className="px-2 py-1 text-sm font-semibold"
+            style={{ color: "#ff6b6b" }}
+          >
+            Delete
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close photo"
+            className="flex h-11 w-11 items-center justify-center text-2xl text-white"
+          >
+            &times;
+          </button>
+        </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-auto">
-        <button
-          type="button"
-          onClick={() => setStep((s) => (s + 1) % ZOOM_STEPS.length)}
-          aria-label={`Zoom, currently ${zoom} times`}
-          className="block"
-          style={{ width: `${zoom * 100}%` }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={photo.src}
-            alt={`${POSE_LABEL[photo.pose]} on ${photo.takenOn}`}
-            className="w-full"
-          />
-        </button>
+      <div
+        className="min-h-0 flex-1 overflow-hidden"
+        style={{ touchAction: "none" }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={photo.src}
+          alt={`${POSE_LABEL[photo.pose]} on ${photo.takenOn}`}
+          draggable={false}
+          className="h-full w-full select-none object-contain"
+          style={{
+            transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
+            transformOrigin: "center center",
+          }}
+        />
       </div>
 
-      <div className="flex shrink-0 items-center gap-2 px-3 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-        <button
-          type="button"
-          onClick={() => setStep((s) => (s + 1) % ZOOM_STEPS.length)}
-          className="flex-1 rounded-[var(--radius-sm)] border py-2.5 text-sm font-semibold text-white"
-          style={{ borderColor: "rgba(255,255,255,0.4)" }}
-        >
-          Zoom {zoom}x
-        </button>
-        <button
-          type="button"
-          onClick={onReplace}
-          className="flex-1 rounded-[var(--radius-sm)] border py-2.5 text-sm font-semibold text-white"
-          style={{ borderColor: "rgba(255,255,255,0.4)" }}
-        >
-          Replace
-        </button>
-        <button
-          type="button"
-          onClick={onRemove}
-          className="rounded-[var(--radius-sm)] px-4 py-2.5 text-sm font-semibold"
-          style={{ background: "var(--color-danger)", color: "#fff" }}
-        >
-          Remove
-        </button>
-      </div>
+      <ConfirmDialog
+        open={confirmRemove}
+        title="Delete this photo?"
+        body="It won't be recoverable."
+        onCancel={() => setConfirmRemove(false)}
+        onConfirm={() => {
+          setConfirmRemove(false);
+          onRemove();
+        }}
+      />
     </div>
   );
 }

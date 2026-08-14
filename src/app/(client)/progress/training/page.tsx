@@ -10,10 +10,6 @@ export default function TrainingAdherencePage() {
         <h1 className="text-xl font-bold" style={{ color: "var(--color-text)" }}>
           Training
         </h1>
-        <p className="-mt-1 text-xs leading-relaxed" style={{ color: "var(--color-text-muted)" }}>
-          One combined number across gym, stretching, cardio and anything else on the plan.
-        </p>
-
         <TrainingAdherenceCard />
       </div>
     </div>

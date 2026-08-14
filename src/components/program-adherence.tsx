@@ -23,8 +23,8 @@ export function ProgramAdherence({
 
   return (
     <section
-      className="rounded-[var(--radius-lg)] border p-3"
-      style={{ borderColor: "var(--color-border)" }}
+      className="rounded-[var(--radius-lg)] border-2 p-3"
+      style={{ borderColor: "color-mix(in srgb, var(--color-brand) 45%, var(--color-border))" }}
     >
       <div className="mb-2 flex items-center justify-between gap-2">
         <h2 className="text-base font-bold" style={{ color: "var(--color-text)" }}>

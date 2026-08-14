@@ -26,6 +26,9 @@ input[type="range"].slider {
   background: transparent;
   outline: none;
   cursor: pointer;
+  /* Sideways movement belongs to the slider, up and down still scrolls the
+     page, so a drag can start anywhere on the track without a fight. */
+  touch-action: pan-y;
 }
 
 input[type="range"].slider::-webkit-slider-runnable-track {

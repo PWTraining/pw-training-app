@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { ConfirmDialog } from "./confirm-dialog";
 import { TODAY_INDEX } from "@/lib/habits";
 import { useHabits, MAX_PHOTOS_PER_DAY, type DayPhoto } from "@/lib/habits-context";
 import { downscale, photoId } from "@/lib/image";
@@ -13,6 +14,7 @@ export function Moments({ day = TODAY_INDEX }: { day?: number }) {
   const [open, setOpen] = useState<DayPhoto | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState(false);
 
   const remaining = MAX_PHOTOS_PER_DAY - photos.length;
 
@@ -59,7 +61,7 @@ export function Moments({ day = TODAY_INDEX }: { day?: number }) {
         </span>
       </div>
       <p className="mb-3 text-xs" style={{ color: "var(--color-text-muted)" }}>
-        Add anything that captures your day.
+        Add anything that captures a moment in time...
       </p>
 
       {photos.length > 0 && (
@@ -172,10 +174,7 @@ export function Moments({ day = TODAY_INDEX }: { day?: number }) {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  removePhoto(day, open.id);
-                  setOpen(null);
-                }}
+                onClick={() => setConfirmRemove(true)}
                 className="rounded-[var(--radius-sm)] border px-3 py-2 text-sm font-semibold"
                 style={{ borderColor: "var(--color-border)", color: "var(--color-danger)" }}
               >
@@ -183,6 +182,18 @@ export function Moments({ day = TODAY_INDEX }: { day?: number }) {
               </button>
             </div>
           </div>
+
+          <ConfirmDialog
+            open={confirmRemove}
+            title="Delete this photo?"
+            body="It won't be recoverable."
+            onCancel={() => setConfirmRemove(false)}
+            onConfirm={() => {
+              removePhoto(day, open.id);
+              setConfirmRemove(false);
+              setOpen(null);
+            }}
+          />
         </div>
       )}
     </section>

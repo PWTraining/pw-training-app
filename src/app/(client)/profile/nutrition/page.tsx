@@ -6,7 +6,6 @@ export default function NutritionPage() {
   return (
     <ProfileSubPage
       title="Nutrition"
-      intro="Daily targets for this block. Ranges rather than fixed numbers, so training days and rest days both fit."
     >
       <EditableStats
         storageKey="pw-profile-nutrition"

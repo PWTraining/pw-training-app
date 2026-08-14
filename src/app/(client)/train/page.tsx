@@ -56,14 +56,16 @@ export default function TrainPage() {
       <div className="flex flex-col gap-5 px-4 pt-4 pb-6">
         {/* No separate "today" callout — today is the highlighted row in the
             week below, which is the same tap and half the screen space. */}
+        {/* Tightened up so a full week fits on one screen, and the yellow
+            wash pulled right back so it isn't competing with the rows. */}
         <section
-          className="rounded-[var(--radius-lg)] border p-4"
+          className="rounded-[var(--radius-lg)] border p-3"
           style={{
-            borderColor: "var(--color-brand-yellow)",
-            background: "color-mix(in srgb, var(--color-brand-yellow) 8%, var(--color-surface))",
+            borderColor: "var(--color-border)",
+            background: "color-mix(in srgb, var(--color-brand-yellow) 3%, var(--color-surface))",
           }}
         >
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-2.5 flex items-center justify-between">
             <button
               type="button"
               onClick={() => changeWeek(-1)}
@@ -75,10 +77,7 @@ export default function TrainPage() {
               ‹
             </button>
             <div className="flex flex-col items-center">
-              <span
-                className="text-base font-bold"
-                style={{ color: "color-mix(in srgb, var(--color-brand-yellow) 55%, black)" }}
-              >
+              <span className="text-base font-bold" style={{ color: "var(--color-text)" }}>
                 {weekLabel}
               </span>
               {weekOffset !== 0 && (
@@ -104,7 +103,7 @@ export default function TrainPage() {
             </button>
           </div>
 
-          <div className="flex flex-col gap-2.5">
+          <div className="flex flex-col gap-1.5">
             {weekDays.map((day) => {
               const isTraining = !!day.session;
               const isToday = day.status === "today";
@@ -127,24 +126,21 @@ export default function TrainPage() {
                 <Link
                   key={day.key}
                   href={`/train/${day.key}`}
-                  className="flex items-center gap-3 rounded-[var(--radius-md)] px-3.5 py-3.5 text-left"
+                  className="flex items-center gap-2.5 rounded-[var(--radius-md)] px-3 py-2 text-left"
                   style={{
+                    // Training days carry the fill, rest days are outlined
+                    // green so they still read as their own thing to tap.
                     background: isTraining
-                      ? "color-mix(in srgb, var(--color-brand-yellow) 20%, var(--color-surface-raised))"
-                      : "var(--color-surface-raised)",
-                    // Today is the row that has to find you at a glance now
-                    // that the callout above it is gone.
+                      ? "color-mix(in srgb, var(--color-brand-yellow) 16%, var(--color-surface-raised))"
+                      : "var(--color-surface)",
                     border: isToday
                       ? "2px solid var(--color-brand)"
                       : isTraining
                         ? "1px solid var(--color-brand-yellow)"
-                        : "1px solid var(--color-border)",
-                    boxShadow: isToday
-                      ? "0 0 0 3px color-mix(in srgb, var(--color-brand) 18%, transparent)"
-                      : "none",
+                        : "1px solid color-mix(in srgb, var(--color-success) 50%, transparent)",
                   }}
                 >
-                  <div className="flex w-11 shrink-0 flex-col items-center gap-1">
+                  <div className="flex w-9 shrink-0 flex-col items-center">
                     <span
                       className="text-[10px] font-semibold"
                       style={{ color: isToday ? "var(--color-brand)" : "var(--color-text-muted)" }}
@@ -152,7 +148,7 @@ export default function TrainPage() {
                       {day.weekdayLabel}
                     </span>
                     <span
-                      className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold"
+                      className="flex h-6 w-6 items-center justify-center rounded-full text-sm font-bold"
                       style={{
                         background: isToday ? "var(--color-brand)" : "transparent",
                         color: isToday ? "var(--color-brand-contrast)" : "var(--color-text)",
@@ -161,27 +157,30 @@ export default function TrainPage() {
                       {day.dateNum}
                     </span>
                   </div>
-                  <div className="min-w-0 flex-1">
+                  <div className="flex min-w-0 flex-1 items-baseline gap-2">
                     {day.session ? (
                       <>
-                        <div
+                        <span
                           className="truncate text-sm font-semibold"
                           style={{ color: "var(--color-text)" }}
                         >
                           {day.session.title}
-                        </div>
-                        <div className="text-xs font-semibold" style={{ color: statusColor }}>
+                        </span>
+                        <span
+                          className="shrink-0 text-[11px] font-semibold"
+                          style={{ color: statusColor }}
+                        >
                           {statusLabel}
-                        </div>
+                        </span>
                       </>
                     ) : (
-                      <div className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+                      <span className="text-sm" style={{ color: "var(--color-text-muted)" }}>
                         Rest day
-                      </div>
+                      </span>
                     )}
                   </div>
                   <span
-                    className="shrink-0 text-lg"
+                    className="shrink-0 text-base"
                     aria-hidden
                     style={{ color: "var(--color-text-muted)" }}
                   >

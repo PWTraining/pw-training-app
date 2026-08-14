@@ -8,6 +8,7 @@ import { DayCheckIn } from "@/components/day-checkin";
 import { DailyReflection } from "@/components/daily-reflection";
 import { Moments } from "@/components/moments";
 import { ProgramAdherence } from "@/components/program-adherence";
+import { CoachNote } from "@/components/coach-note";
 import { useHabits } from "@/lib/habits-context";
 import { MOCK_TRAINING_PCT, MOCK_COACH_COMMENT, weeklyPct, type Timeframe } from "@/lib/habits";
 import { dateKey, todaysSession } from "@/lib/train-schedule";
@@ -58,36 +59,7 @@ export default function HomePage() {
         {/* Sits above everything else because it's only here on the days the
             coach has actually written something, and on those days it's the
             first thing to read. */}
-        {MOCK_COACH_COMMENT && (
-          <section
-            className="rounded-[var(--radius-lg)] border-2 p-4"
-            style={{
-              background: "var(--color-note)",
-              borderColor: "var(--color-brand-red)",
-            }}
-          >
-            <div className="mb-2 flex items-center gap-2.5">
-              <span
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
-                style={{ background: "var(--color-brand-red)" }}
-                aria-hidden
-              >
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.3-.6L3 21l1.8-5a8.2 8.2 0 0 1-.8-3.5 8.4 8.4 0 0 1 8.5-8.4 8.4 8.4 0 0 1 8.5 8.4z" />
-                </svg>
-              </span>
-              <div className="text-sm font-bold" style={{ color: "var(--color-text)" }}>
-                Coach&rsquo;s Note
-              </div>
-            </div>
-            <p
-              className="text-sm font-medium leading-relaxed"
-              style={{ color: "var(--color-text)" }}
-            >
-              {MOCK_COACH_COMMENT}
-            </p>
-          </section>
-        )}
+        <CoachNote note={MOCK_COACH_COMMENT} />
 
         <ProgramAdherence
           values={adherenceValues}

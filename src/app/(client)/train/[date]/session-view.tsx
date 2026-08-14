@@ -198,16 +198,17 @@ export function SessionView({ dateKey }: { dateKey: string }) {
                   ))}
                 </div>
 
+                {/* Quiet on purpose: it's an occasional extra, not the thing
+                    you came to this card to do. */}
                 <button
                   type="button"
-                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border-2 py-3 text-sm font-bold"
+                  className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-[var(--radius-md)] border py-2 text-xs font-medium"
                   style={{
-                    borderColor: "var(--color-brand)",
-                    background: "color-mix(in srgb, var(--color-brand) 10%, transparent)",
-                    color: "var(--color-brand)",
+                    borderColor: "var(--color-border)",
+                    color: "var(--color-text-muted)",
                   }}
                 >
-                  <span className="text-base leading-none" aria-hidden>
+                  <span className="text-sm leading-none" aria-hidden>
                     📷
                   </span>
                   Upload Video

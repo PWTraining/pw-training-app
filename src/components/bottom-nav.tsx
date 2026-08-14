@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useChatUnread } from "@/lib/chat-unread";
 
 const TABS = [
   { href: "/home", label: "Home", icon: "⌂" },
@@ -14,7 +13,6 @@ const TABS = [
 
 export function BottomNav() {
   const pathname = usePathname();
-  const { unreadCount } = useChatUnread();
 
   return (
     <nav
@@ -63,8 +61,10 @@ export function BottomNav() {
                 color: active ? "var(--color-brand)" : "var(--color-text-muted)",
               }}
             >
+              {/* No unread marker on the nav: it reads as an alarm sitting
+                  on screen all day. The count lives on the chat rows. */}
               <span
-                className="relative flex h-7 w-11 items-center justify-center rounded-full text-lg leading-none transition-colors"
+                className="flex h-7 w-11 items-center justify-center rounded-full text-lg leading-none transition-colors"
                 style={{
                   background: active
                     ? "color-mix(in srgb, var(--color-brand) 14%, transparent)"
@@ -73,22 +73,8 @@ export function BottomNav() {
                 aria-hidden
               >
                 {tab.icon}
-                {/* Unread marker rides on the icon itself so it's visible
-                    from any tab, not only from inside Chat. */}
-                {tab.href === "/chat" && unreadCount > 0 && (
-                  <span
-                    className="absolute right-1.5 top-0 h-2.5 w-2.5 rounded-full"
-                    style={{
-                      background: "var(--color-brand-red)",
-                      boxShadow: "0 0 0 2px var(--color-surface)",
-                    }}
-                  />
-                )}
               </span>
               {tab.label}
-              {tab.href === "/chat" && unreadCount > 0 && (
-                <span className="sr-only">{unreadCount} unread</span>
-              )}
             </Link>
           );
         })}
