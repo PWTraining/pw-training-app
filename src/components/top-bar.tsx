@@ -40,10 +40,24 @@ export function TopBar() {
               type="button"
               onClick={goBack}
               aria-label="Back"
-              className="flex h-11 w-11 items-center justify-center rounded-full text-2xl leading-none"
+              className="flex h-11 w-11 items-center justify-center rounded-full"
               style={{ color: "var(--color-brand)" }}
             >
-              <span aria-hidden>&#8249;</span>
+              {/* Drawn rather than typed: the chevron glyph is thin and sits
+                  off-centre in its own line box at this size. */}
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="M15 5 8 12l7 7" />
+              </svg>
             </button>
           )}
         </div>

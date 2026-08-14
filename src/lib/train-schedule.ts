@@ -55,6 +55,21 @@ export function statusForDate(date: Date): DayStatus {
   return hashDate(date) % 5 === 0 ? "missed" : "completed";
 }
 
+// Local calendar date, not toISOString — that shifts to the previous day for
+// anyone east of UTC, which is everyone using this app.
+export function dateKey(date: Date): string {
+  const m = `${date.getMonth() + 1}`.padStart(2, "0");
+  const d = `${date.getDate()}`.padStart(2, "0");
+  return `${date.getFullYear()}-${m}-${d}`;
+}
+
+export function dateFromKey(key: string): Date | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(key);
+  if (!m) return null;
+  const date = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 export type ProgramDay = {
   date: Date;
   key: string;
@@ -64,20 +79,32 @@ export type ProgramDay = {
   status: DayStatus;
 };
 
+export function programDayFor(date: Date): ProgramDay {
+  return {
+    date,
+    key: dateKey(date),
+    weekdayLabel: WEEKDAY_LABELS[date.getDay()],
+    dateNum: date.getDate(),
+    session: WEEKLY_SESSION_PLAN[date.getDay()],
+    status: statusForDate(date),
+  };
+}
+
+export function longDateLabel(date: Date): string {
+  return date.toLocaleDateString(undefined, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+}
+
 export function getWeekDays(weekOffset: number): ProgramDay[] {
   const monday = startOfWeek(new Date());
   monday.setDate(monday.getDate() + weekOffset * 7);
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(monday);
     d.setDate(d.getDate() + i);
-    return {
-      date: d,
-      key: d.toDateString(),
-      weekdayLabel: WEEKDAY_LABELS[d.getDay()],
-      dateNum: d.getDate(),
-      session: WEEKLY_SESSION_PLAN[d.getDay()],
-      status: statusForDate(d),
-    };
+    return programDayFor(d);
   });
 }
 

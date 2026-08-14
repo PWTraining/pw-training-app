@@ -10,7 +10,7 @@ import { Moments } from "@/components/moments";
 import { ProgramAdherence } from "@/components/program-adherence";
 import { useHabits } from "@/lib/habits-context";
 import { MOCK_TRAINING_PCT, MOCK_COACH_COMMENT, weeklyPct, type Timeframe } from "@/lib/habits";
-import { todaysSession } from "@/lib/train-schedule";
+import { dateKey, todaysSession } from "@/lib/train-schedule";
 
 const HOME_TIMEFRAMES: Timeframe[] = ["Daily", "Weekly"];
 const HOME_TIMEFRAME_LABELS = { Daily: "Today", Weekly: "This week" };
@@ -19,6 +19,7 @@ export default function HomePage() {
   const { habits, todayValue } = useHabits();
   const [timeframe, setTimeframe] = useState<Timeframe>("Daily");
   const session = useMemo(() => todaysSession(), []);
+  const todayKey = useMemo(() => dateKey(new Date()), []);
 
   const adherenceValues = useMemo<Partial<Record<Timeframe, number>>>(() => {
     if (habits.length === 0) {
@@ -80,7 +81,7 @@ export default function HomePage() {
               </div>
             </div>
             <Link
-              href="/train"
+              href={`/train/${todayKey}`}
               className="rounded-full py-2.5 text-center text-sm font-semibold"
               style={{ background: "var(--color-brand)", color: "var(--color-brand-contrast)" }}
             >
