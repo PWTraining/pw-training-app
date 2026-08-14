@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { TopBar } from "@/components/top-bar";
-import { WeatherPill } from "@/components/weather-pill";
+import { WeatherHeader } from "@/components/weather-pill";
 import { DayCheckIn } from "@/components/day-checkin";
 import { DailyReflection } from "@/components/daily-reflection";
 import { Moments } from "@/components/moments";
@@ -44,7 +44,7 @@ export default function HomePage() {
       <TopBar />
 
       <div className="flex flex-col gap-5 px-4 pt-4 pb-6">
-        <section className="flex items-start justify-between gap-3">
+        <WeatherHeader>
           <div>
             <h1 className="text-xl font-bold" style={{ color: "var(--color-text)" }}>
               Greetings, Paul
@@ -53,81 +53,28 @@ export default function HomePage() {
               Nice to see you today.
             </p>
           </div>
-          <WeatherPill />
-        </section>
+        </WeatherHeader>
 
-        <ProgramAdherence
-          values={adherenceValues}
-          timeframe={timeframe}
-          onTimeframeChange={setTimeframe}
-          timeframes={HOME_TIMEFRAMES}
-          labels={HOME_TIMEFRAME_LABELS}
-        />
-
-        {session ? (
-          <div
-            className="flex flex-col gap-3 rounded-[var(--radius-lg)] border p-4"
-            style={{
-              borderColor: "var(--color-brand)",
-              background: "color-mix(in srgb, var(--color-brand) 8%, var(--color-surface))",
-            }}
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-2xl leading-none" aria-hidden>
-                🏋️
-              </span>
-              <div className="text-base font-bold" style={{ color: "var(--color-brand)" }}>
-                Today&rsquo;s Session
-              </div>
-            </div>
-            <Link
-              href={`/train/${todayKey}`}
-              className="rounded-full py-2.5 text-center text-sm font-semibold"
-              style={{ background: "var(--color-brand)", color: "var(--color-brand-contrast)" }}
-            >
-              View Session
-            </Link>
-          </div>
-        ) : (
-          <div
-            className="flex items-center gap-3 rounded-[var(--radius-lg)] border p-4"
-            style={{
-              borderColor: "var(--color-brand)",
-              background: "color-mix(in srgb, var(--color-brand) 8%, var(--color-surface))",
-            }}
-          >
-            <span className="text-2xl leading-none" aria-hidden>
-              ☯️
-            </span>
-            <div>
-              <div className="text-base font-bold" style={{ color: "var(--color-brand)" }}>
-                Today&rsquo;s Session
-              </div>
-              <div className="text-sm" style={{ color: "var(--color-text)" }}>
-                Rest day
-              </div>
-            </div>
-          </div>
-        )}
-
+        {/* Sits above everything else because it's only here on the days the
+            coach has actually written something, and on those days it's the
+            first thing to read. */}
         {MOCK_COACH_COMMENT && (
-          /* Set apart from Today's Session by form rather than alarm: a
-             filled warm note with a face on it, against that card's teal
-             outline and button. Nothing here should read as a warning. */
           <section
-            className="rounded-[var(--radius-lg)] border p-4"
+            className="rounded-[var(--radius-lg)] border-2 p-4"
             style={{
               background: "var(--color-note)",
-              borderColor: "var(--color-note-border)",
+              borderColor: "var(--color-brand-red)",
             }}
           >
             <div className="mb-2 flex items-center gap-2.5">
               <span
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-extrabold"
-                style={{ background: "var(--color-brand-red)", color: "#fff" }}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+                style={{ background: "var(--color-brand-red)" }}
                 aria-hidden
               >
-                PW
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.3-.6L3 21l1.8-5a8.2 8.2 0 0 1-.8-3.5 8.4 8.4 0 0 1 8.5-8.4 8.4 8.4 0 0 1 8.5 8.4z" />
+                </svg>
               </span>
               <div className="text-sm font-bold" style={{ color: "var(--color-text)" }}>
                 Coach&rsquo;s Note
@@ -141,6 +88,45 @@ export default function HomePage() {
             </p>
           </section>
         )}
+
+        <ProgramAdherence
+          values={adherenceValues}
+          timeframe={timeframe}
+          onTimeframeChange={setTimeframe}
+          timeframes={HOME_TIMEFRAMES}
+          labels={HOME_TIMEFRAME_LABELS}
+        />
+
+        {/* Always here, rest day included, and always the same tap through to
+            whatever the Train tab has on for today. */}
+        <Link
+          href={`/train/${todayKey}`}
+          className="flex flex-col gap-3 rounded-[var(--radius-lg)] border p-4"
+          style={{
+            borderColor: "var(--color-brand)",
+            background: "color-mix(in srgb, var(--color-brand) 8%, var(--color-surface))",
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-2xl leading-none" aria-hidden>
+              {session ? "🏋️" : "☯️"}
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="text-base font-bold" style={{ color: "var(--color-brand)" }}>
+                Today&rsquo;s Session
+              </div>
+              <div className="text-sm" style={{ color: "var(--color-text)" }}>
+                {session ?? "Rest day"}
+              </div>
+            </div>
+          </div>
+          <span
+            className="rounded-full py-2.5 text-center text-sm font-semibold"
+            style={{ background: "var(--color-brand)", color: "var(--color-brand-contrast)" }}
+          >
+            {session ? "View Session" : "View Day"}
+          </span>
+        </Link>
 
         <DayCheckIn />
 

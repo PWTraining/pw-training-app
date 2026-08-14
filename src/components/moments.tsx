@@ -52,14 +52,14 @@ export function Moments({ day = TODAY_INDEX }: { day?: number }) {
           <span className="text-base leading-none" aria-hidden>
             📷
           </span>
-          Photos
+          Photos From Today
         </h2>
         <span className="text-[11px]" style={{ color: "var(--color-text-muted)" }}>
           {photos.length} of {MAX_PHOTOS_PER_DAY}
         </span>
       </div>
       <p className="mb-3 text-xs" style={{ color: "var(--color-text-muted)" }}>
-        A view, a quote, a selfie. Whatever today looked like.
+        Add anything that captures your day.
       </p>
 
       {photos.length > 0 && (

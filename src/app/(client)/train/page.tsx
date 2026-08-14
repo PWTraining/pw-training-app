@@ -5,12 +5,10 @@ import { useMemo, useState } from "react";
 import { TopBar } from "@/components/top-bar";
 import { useTrainLog } from "@/lib/train-log";
 import {
-  dateKey,
   getWeekDays,
   weekRangeLabel,
   minWeekOffset,
   MAX_WEEK_OFFSET,
-  todaysSession,
   type DayStatus,
 } from "@/lib/train-schedule";
 
@@ -31,8 +29,6 @@ const STATUS_COLOR: Record<DayStatus, string> = {
 };
 
 export default function TrainPage() {
-  const session = useMemo(() => todaysSession(), []);
-  const todayKey = useMemo(() => dateKey(new Date()), []);
   const minOffset = useMemo(() => minWeekOffset(), []);
 
   const [weekOffset, setWeekOffset] = useState(0);
@@ -58,32 +54,8 @@ export default function TrainPage() {
       <TopBar />
 
       <div className="flex flex-col gap-5 px-4 pt-4 pb-6">
-        {/* Today's session is the one thing most people open this tab for, so
-            it's a direct way into the log rather than a heading. */}
-        <Link
-          href={`/train/${todayKey}`}
-          className="flex items-center gap-3 rounded-[var(--radius-lg)] border p-4"
-          style={{
-            borderColor: "var(--color-brand)",
-            background: "color-mix(in srgb, var(--color-brand) 8%, var(--color-surface))",
-          }}
-        >
-          <span className="text-2xl leading-none" aria-hidden>
-            {session ? "🏋️" : "☯️"}
-          </span>
-          <div className="min-w-0 flex-1">
-            <div className="text-base font-bold" style={{ color: "var(--color-brand)" }}>
-              Today&rsquo;s Session
-            </div>
-            <div className="text-sm" style={{ color: "var(--color-text)" }}>
-              {session ?? "Rest day"}
-            </div>
-          </div>
-          <span className="shrink-0 text-lg" aria-hidden style={{ color: "var(--color-brand)" }}>
-            &#8250;
-          </span>
-        </Link>
-
+        {/* No separate "today" callout — today is the highlighted row in the
+            week below, which is the same tap and half the screen space. */}
         <section
           className="rounded-[var(--radius-lg)] border p-4"
           style={{
@@ -135,6 +107,7 @@ export default function TrainPage() {
           <div className="flex flex-col gap-2.5">
             {weekDays.map((day) => {
               const isTraining = !!day.session;
+              const isToday = day.status === "today";
               // A locally recorded session is the truth about whether the work
               // happened, so it wins over the programmed status.
               const saved = isSessionSaved(day.key);
@@ -159,24 +132,30 @@ export default function TrainPage() {
                     background: isTraining
                       ? "color-mix(in srgb, var(--color-brand-yellow) 20%, var(--color-surface-raised))"
                       : "var(--color-surface-raised)",
-                    border: isTraining
-                      ? "1px solid var(--color-brand-yellow)"
-                      : "1px solid var(--color-border)",
+                    // Today is the row that has to find you at a glance now
+                    // that the callout above it is gone.
+                    border: isToday
+                      ? "2px solid var(--color-brand)"
+                      : isTraining
+                        ? "1px solid var(--color-brand-yellow)"
+                        : "1px solid var(--color-border)",
+                    boxShadow: isToday
+                      ? "0 0 0 3px color-mix(in srgb, var(--color-brand) 18%, transparent)"
+                      : "none",
                   }}
                 >
                   <div className="flex w-11 shrink-0 flex-col items-center gap-1">
                     <span
                       className="text-[10px] font-semibold"
-                      style={{ color: "var(--color-text-muted)" }}
+                      style={{ color: isToday ? "var(--color-brand)" : "var(--color-text-muted)" }}
                     >
                       {day.weekdayLabel}
                     </span>
                     <span
                       className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold"
                       style={{
-                        background: day.status === "today" ? "var(--color-text)" : "transparent",
-                        color:
-                          day.status === "today" ? "var(--color-surface)" : "var(--color-text)",
+                        background: isToday ? "var(--color-brand)" : "transparent",
+                        color: isToday ? "var(--color-brand-contrast)" : "var(--color-text)",
                       }}
                     >
                       {day.dateNum}

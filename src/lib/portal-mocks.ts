@@ -86,6 +86,14 @@ export const DEFAULT_NUTRITION = [
   { id: "fat", label: "Fat", value: "70-90g" },
 ];
 
+export const DEFAULT_HYDRATION = [
+  { id: "daily", label: "Daily target", value: "3.0-3.5L" },
+  { id: "training", label: "Training days", value: "+750ml per hour" },
+  { id: "waking", label: "On waking", value: "500ml" },
+  { id: "electrolytes", label: "Electrolytes", value: "1 serve, morning" },
+  { id: "caffeine", label: "Caffeine cutoff", value: "2pm" },
+];
+
 export type PortalDocument = {
   id: string;
   emoji: string;

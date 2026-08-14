@@ -5,7 +5,7 @@ export default function ProgressPhotosPage() {
   return (
     <ProfileSubPage
       title="Progress Photos"
-      intro="Taken at the start and end of each block. Photos catch changes the scale misses."
+      intro="Front, back and side on the same day. Compare any two shoots side by side."
     >
       <ProgressPhotos />
     </ProfileSubPage>

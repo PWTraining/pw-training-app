@@ -42,7 +42,7 @@ type PhotosByDay = Record<number, DayPhoto[]>;
 // days are closed unless they've reopened one to correct it.
 type ClosedDays = Record<number, boolean>;
 
-export const MAX_PHOTOS_PER_DAY = 9;
+export const MAX_PHOTOS_PER_DAY = 3;
 
 // Everything a single undo step needs to put back.
 type Snapshot = {

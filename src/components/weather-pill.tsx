@@ -31,14 +31,61 @@ function describeWeather(code: number) {
   return WEATHER_CODES[code] ?? { emoji: "🌡️", label: "current conditions" };
 }
 
-type Weather = { tempC: number; emoji: string; label: string; place: string };
+type Weather = {
+  tempC: number;
+  emoji: string;
+  label: string;
+  place: string;
+  summary: string;
+  highC: number;
+  lowC: number;
+  rainChance: number;
+};
+
+// The worst code in a stretch of hours is what people remember about it, so
+// "showers" wins over the sunny hours either side of it.
+function dominantCode(codes: number[]): number | null {
+  if (codes.length === 0) return null;
+  return codes.reduce((worst, code) => (code > worst ? code : worst), codes[0]);
+}
+
+// Turns the raw numbers into the sentence you'd actually say: what the day is
+// like overall, and the part of it that's different.
+function buildSummary(dayCode: number, hourlyCodes: number[], hours: number[]): string {
+  const dayLabel = describeWeather(dayCode).label;
+
+  const at = (from: number, to: number) =>
+    dominantCode(hourlyCodes.filter((_, i) => hours[i] >= from && hours[i] < to));
+
+  const morning = at(6, 12);
+  const afternoon = at(12, 18);
+  const evening = at(18, 22);
+
+  // Only worth naming a part of the day when it's meaningfully worse than
+  // the rest of it. Otherwise the sentence just repeats itself.
+  const parts: string[] = [];
+  if (afternoon !== null && morning !== null && afternoon > morning + 1) {
+    parts.push(`afternoon ${describeWeather(afternoon).label}`);
+  } else if (morning !== null && afternoon !== null && morning > afternoon + 1) {
+    parts.push(`morning ${describeWeather(morning).label}`);
+  }
+  if (evening !== null && afternoon !== null && evening > afternoon + 1) {
+    parts.push(`${describeWeather(evening).label} into the evening`);
+  }
+
+  const sentence = parts.length ? `${dayLabel} with ${parts.join(", then ")}` : dayLabel;
+  return sentence.charAt(0).toUpperCase() + sentence.slice(1);
+}
 
 // Open-Meteo for conditions and BigDataCloud for the place name — both are
 // keyless, so this runs straight from the browser with nothing to manage.
 async function fetchWeather(latitude: number, longitude: number): Promise<Weather> {
   const [weatherRes, placeRes] = await Promise.all([
     fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&timezone=auto`,
+      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}` +
+        `&current=temperature_2m,weather_code&hourly=weather_code` +
+        `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max` +
+        `&forecast_days=1&timezone=auto`,
     ),
     fetch(
       `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`,
@@ -48,10 +95,18 @@ async function fetchWeather(latitude: number, longitude: number): Promise<Weathe
   const weather = await weatherRes.json();
   const place = await placeRes.json();
 
+  const hourly: string[] = weather.hourly?.time ?? [];
+  const hours = hourly.map((t: string) => Number(t.slice(11, 13)));
+  const dayCode = weather.daily?.weather_code?.[0] ?? weather.current.weather_code;
+
   return {
     tempC: Math.round(weather.current.temperature_2m),
     ...describeWeather(weather.current.weather_code),
     place: place.city || place.locality || place.principalSubdivision || "Your area",
+    summary: buildSummary(dayCode, weather.hourly?.weather_code ?? [], hours),
+    highC: Math.round(weather.daily?.temperature_2m_max?.[0] ?? weather.current.temperature_2m),
+    lowC: Math.round(weather.daily?.temperature_2m_min?.[0] ?? weather.current.temperature_2m),
+    rainChance: Math.round(weather.daily?.precipitation_probability_max?.[0] ?? 0),
   };
 }
 
@@ -117,7 +172,10 @@ async function currentCoords(): Promise<Coords> {
   });
 }
 
-export function WeatherPill() {
+// Wraps whatever sits beside it in the header so the forecast can open as a
+// real drop-down: the panel is part of the page flow, so everything below it
+// moves down instead of being covered by a floating bubble.
+export function WeatherHeader({ children }: { children: React.ReactNode }) {
   const [weather, setWeather] = useState<Weather | null>(null);
   const [open, setOpen] = useState(false);
 
@@ -136,41 +194,53 @@ export function WeatherPill() {
     };
   }, []);
 
-  if (!weather) return null;
-
   return (
-    <div className="relative shrink-0">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="flex h-9 items-center gap-1.5 rounded-full border px-3 text-sm font-medium tabular-nums"
-        style={{
-          borderColor: "var(--color-border)",
-          background: "var(--color-surface)",
-          color: "var(--color-text)",
-        }}
-      >
-        <span aria-hidden>{weather.emoji}</span>
-        {weather.tempC}&deg;
-        <span className="text-[9px]" style={{ color: "var(--color-text-muted)" }} aria-hidden>
-          {open ? "▲" : "▼"}
-        </span>
-      </button>
+    <section className="flex flex-col gap-3">
+      <div className="flex items-start justify-between gap-3">
+        {children}
 
-      {open && (
+        {weather && (
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-label={`${weather.tempC} degrees, ${weather.summary}. Tap for the day's forecast`}
+            className="flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-sm font-medium tabular-nums"
+            style={{
+              borderColor: open ? "var(--color-brand)" : "var(--color-border)",
+              background: "var(--color-surface)",
+              color: "var(--color-text)",
+            }}
+          >
+            <span aria-hidden>{weather.emoji}</span>
+            {weather.tempC}&deg;
+            <span className="text-[9px]" style={{ color: "var(--color-text-muted)" }} aria-hidden>
+              {open ? "▲" : "▼"}
+            </span>
+          </button>
+        )}
+      </div>
+
+      {weather && open && (
         <div
-          className="absolute right-0 top-11 z-20 w-max max-w-[15rem] rounded-[var(--radius-md)] border px-3 py-2 text-xs"
+          className="rounded-[var(--radius-md)] border p-3.5"
           style={{
             borderColor: "var(--color-border)",
             background: "var(--color-surface-raised)",
-            color: "var(--color-text)",
-            boxShadow: "0 6px 20px rgba(0,0,0,0.10)",
           }}
         >
-          {weather.place}, {weather.label}
+          <div className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>
+            {weather.place} <span aria-hidden>📍</span>
+          </div>
+          <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--color-text)" }}>
+            {weather.summary}.
+          </p>
+          <p className="mt-1.5 text-xs tabular-nums" style={{ color: "var(--color-text-muted)" }}>
+            {weather.lowC}&deg; to {weather.highC}&deg; &middot; {weather.rainChance}% chance of
+            rain &middot; {weather.tempC}&deg; right now
+          </p>
         </div>
       )}
-    </div>
+    </section>
   );
 }

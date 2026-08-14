@@ -29,11 +29,6 @@ export function SessionView({ dateKey }: { dateKey: string }) {
 
   const day = programDayFor(date);
   const log = sessionFor(dateKey, exercises);
-  const totalSets = exercises.reduce((n, ex) => n + ex.setCount, 0);
-  const doneSets = exercises.reduce(
-    (n, ex) => n + (log.sets[ex.id]?.filter((s) => s.done).length ?? 0),
-    0,
-  );
 
   return (
     <div>
@@ -98,22 +93,7 @@ export function SessionView({ dateKey }: { dateKey: string }) {
                 Edit session
               </button>
             </div>
-          ) : (
-            <div
-              className="flex items-center justify-between gap-3 rounded-[var(--radius-md)] border px-3 py-2"
-              style={{ borderColor: "var(--color-border)" }}
-            >
-              <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>
-                {doneSets} of {totalSets} sets logged
-              </span>
-              <span
-                className="text-xs font-semibold tabular-nums"
-                style={{ color: "var(--color-brand)" }}
-              >
-                {totalSets ? Math.round((doneSets / totalSets) * 100) : 0}%
-              </span>
-            </div>
-          )}
+          ) : null}
 
           {exercises.map((exercise) => {
             const rows = log.sets[exercise.id] ?? [];
@@ -137,10 +117,14 @@ export function SessionView({ dateKey }: { dateKey: string }) {
                       href={exercise.demoUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex h-9 shrink-0 items-center px-1 text-xs font-medium"
-                      style={{ color: "var(--color-brand)" }}
+                      className="flex h-9 shrink-0 items-center gap-1.5 rounded-full border-2 px-3 text-xs font-bold"
+                      style={{
+                        borderColor: "var(--color-brand)",
+                        background: "color-mix(in srgb, var(--color-brand) 10%, transparent)",
+                        color: "var(--color-brand)",
+                      }}
                     >
-                      Video ▸
+                      <span aria-hidden>▶</span> Video
                     </a>
                   )}
                 </div>
@@ -216,10 +200,17 @@ export function SessionView({ dateKey }: { dateKey: string }) {
 
                 <button
                   type="button"
-                  className="mt-3 w-full rounded-md border py-2.5 text-xs font-medium"
-                  style={{ borderColor: "var(--color-border)", color: "var(--color-text-muted)" }}
+                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border-2 py-3 text-sm font-bold"
+                  style={{
+                    borderColor: "var(--color-brand)",
+                    background: "color-mix(in srgb, var(--color-brand) 10%, transparent)",
+                    color: "var(--color-brand)",
+                  }}
                 >
-                  🎥 Upload technique video
+                  <span className="text-base leading-none" aria-hidden>
+                    📷
+                  </span>
+                  Upload Video
                 </button>
               </div>
             );

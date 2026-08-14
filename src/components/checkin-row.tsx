@@ -55,6 +55,8 @@ export function CheckInRow({
       className="py-3"
       style={{ borderBottom: isLast ? "none" : "1px solid var(--color-border)" }}
     >
+      {/* Name and score on top, controls underneath: the top of the row was
+          getting crowded once both buttons were finger-sized. */}
       <div className="mb-1 flex items-center gap-1">
         <span className="text-2xl leading-none" aria-hidden>
           {emoji}
@@ -62,27 +64,6 @@ export function CheckInRow({
         <span className="flex-1 pl-1.5 text-sm font-medium" style={{ color: "var(--color-text)" }}>
           {label}
         </span>
-        {why && (
-          <button
-            type="button"
-            onClick={() => setWhyOpen(true)}
-            aria-label={`Why ${label} matters`}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg"
-            style={{ color: "var(--color-text-muted)" }}
-          >
-            ⓘ
-          </button>
-        )}
-        <button
-          type="button"
-          disabled={readOnly && !saved}
-          onClick={() => (open ? setOpen(false) : startEditing())}
-          aria-label={saved ? `Edit your comment on ${label}` : `Leave a comment on ${label}`}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg"
-          style={{ color: saved ? "var(--color-brand)" : "var(--color-text-muted)" }}
-        >
-          💬
-        </button>
         <span
           className="w-14 shrink-0 text-right text-lg font-bold tabular-nums"
           style={{ color: fill }}
@@ -116,6 +97,33 @@ export function CheckInRow({
         ))}
       </div>
 
+      <div className="mt-1 flex items-center justify-between">
+        {why ? (
+          <button
+            type="button"
+            onClick={() => setWhyOpen(true)}
+            aria-label={`About ${label}`}
+            className="-ml-2 flex h-10 w-10 items-center justify-center rounded-full text-lg"
+            style={{ color: "var(--color-text-muted)" }}
+          >
+            ⓘ
+          </button>
+        ) : (
+          <span />
+        )}
+
+        <button
+          type="button"
+          disabled={readOnly && !saved}
+          onClick={() => (open ? setOpen(false) : startEditing())}
+          aria-label={saved ? `Edit your comment on ${label}` : `Leave a comment on ${label}`}
+          className="-mr-2 flex h-10 w-10 items-center justify-center rounded-full text-lg"
+          style={{ color: saved ? "var(--color-brand)" : "var(--color-text-muted)" }}
+        >
+          💬
+        </button>
+      </div>
+
       {/* The saved comment reads as plain text until tapped, so a past day
           shows as a snapshot rather than a form. */}
       {saved && !open && readOnly && (
@@ -147,9 +155,11 @@ export function CheckInRow({
         </button>
       )}
 
+      {/* Centred, and only as tall as the text needs. Long entries scroll
+          inside the card rather than pushing the button off screen. */}
       {whyOpen && why && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center"
+          className="fixed inset-0 z-50 flex items-center justify-center p-5"
           style={{ background: "rgba(0,0,0,0.6)" }}
         >
           <button
@@ -159,30 +169,37 @@ export function CheckInRow({
             onClick={() => setWhyOpen(false)}
           />
           <div
-            className="relative w-full max-w-sm rounded-[var(--radius-lg)] p-4"
+            className="relative flex max-h-[80vh] w-full max-w-sm flex-col rounded-[var(--radius-lg)] p-5"
             style={{ background: "var(--color-surface)" }}
           >
-            <div className="mb-2 flex items-center gap-2">
-              <span className="text-xl leading-none" aria-hidden>
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl leading-none" aria-hidden>
                 {emoji}
               </span>
-              <h3 className="text-sm font-bold" style={{ color: "var(--color-text)" }}>
-                Why {label}
+              <h3 className="text-xl font-bold" style={{ color: "var(--color-text)" }}>
+                {label}
               </h3>
             </div>
-            <p
-              className="text-xs leading-relaxed"
-              style={{ color: "var(--color-text-muted)" }}
-            >
-              {why}
-            </p>
+
+            <div className="mt-4 min-h-0 overflow-y-auto">
+              <div className="text-sm font-bold" style={{ color: "var(--color-text)" }}>
+                Description
+              </div>
+              <p
+                className="mt-1.5 whitespace-pre-wrap text-base leading-relaxed"
+                style={{ color: "var(--color-text)" }}
+              >
+                {why}
+              </p>
+            </div>
+
             <button
               type="button"
               onClick={() => setWhyOpen(false)}
-              className="mt-3 w-full rounded-[var(--radius-sm)] py-2 text-sm font-semibold"
+              className="mt-5 w-full shrink-0 rounded-[var(--radius-sm)] py-3 text-sm font-semibold"
               style={{ background: "var(--color-brand)", color: "var(--color-brand-contrast)" }}
             >
-              Got it
+              Close
             </button>
           </div>
         </div>

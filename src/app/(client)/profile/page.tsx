@@ -5,12 +5,13 @@ import { MOCK_PROFILE, ageFrom, formatBirthday } from "@/lib/portal-mocks";
 // Everything reachable from the profile. Each one is its own rabbit hole —
 // same plain callout treatment as the Documents list.
 const SECTIONS = [
-  { href: "/profile/roadmap", emoji: "🗺️", title: "Roadmap", blurb: "Your phases and non-negotiables" },
-  { href: "/profile/documents", emoji: "📋", title: "Documents", blurb: "Protocols written for you" },
   { href: "/profile/metrics", emoji: "📏", title: "Metrics", blurb: "Measurements over time" },
+  { href: "/profile/documents", emoji: "📋", title: "Documents", blurb: "Protocols written for you" },
   { href: "/profile/photos", emoji: "📷", title: "Progress Photos", blurb: "See the change the scale misses" },
-  { href: "/profile/testing", emoji: "🧪", title: "Testing", blurb: "Strength and fitness benchmarks" },
   { href: "/profile/nutrition", emoji: "🥗", title: "Nutrition", blurb: "Targets and food guidance" },
+  { href: "/profile/hydration", emoji: "💧", title: "Hydration", blurb: "How much to drink and when" },
+  { href: "/profile/testing", emoji: "🧪", title: "Testing", blurb: "Strength and fitness benchmarks" },
+  { href: "/profile/roadmap", emoji: "🗺️", title: "Roadmap", blurb: "Your phases and non-negotiables" },
 ];
 
 function initials(name: string) {
