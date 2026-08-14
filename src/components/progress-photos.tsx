@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog } from "./confirm-dialog";
+import { PhotoCropper } from "./photo-cropper";
 import { downscale, photoId } from "@/lib/image";
 import { useScrollLock } from "@/lib/scroll-lock";
 
@@ -54,6 +55,10 @@ export function ProgressPhotos() {
   const [viewing, setViewing] = useState<ProgressPhoto | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [cropping, setCropping] = useState<{
+    src: string;
+    slot: { takenOn: string; pose: Pose };
+  } | null>(null);
 
   const fileInput = useRef<HTMLInputElement>(null);
   const pendingSlot = useRef<{ takenOn: string; pose: Pose } | null>(null);
@@ -93,6 +98,14 @@ export function ProgressPhotos() {
     fileInput.current?.click();
   }
 
+  // One photo per angle per day: saving again replaces that slot.
+  function put(slot: { takenOn: string; pose: Pose }, src: string) {
+    setPhotos((prev) => [
+      ...prev.filter((p) => !(p.takenOn === slot.takenOn && p.pose === slot.pose)),
+      { id: photoId(), src, takenOn: slot.takenOn, note: "", pose: slot.pose },
+    ]);
+  }
+
   async function handleFile(files: FileList | null) {
     const file = files?.[0];
     const slot = pendingSlot.current;
@@ -101,12 +114,9 @@ export function ProgressPhotos() {
     setError("");
     setBusy(true);
     try {
-      const src = await downscale(file);
-      setPhotos((prev) => [
-        // One photo per angle per day: adding again replaces that slot.
-        ...prev.filter((p) => !(p.takenOn === slot.takenOn && p.pose === slot.pose)),
-        { id: photoId(), src, takenOn: slot.takenOn, note: "", pose: slot.pose },
-      ]);
+      // Straight into the cropper rather than saving as shot, so the framing
+      // is set once and every comparison lines up.
+      setCropping({ src: await downscale(file), slot });
     } catch {
       setError("That photo wouldn't load. Try another one.");
     } finally {
@@ -231,9 +241,27 @@ export function ProgressPhotos() {
         <PhotoViewer
           photo={viewing}
           onClose={() => setViewing(null)}
+          onCrop={() => {
+            setCropping({
+              src: viewing.src,
+              slot: { takenOn: viewing.takenOn, pose: viewing.pose },
+            });
+            setViewing(null);
+          }}
           onRemove={() => {
             setPhotos((prev) => prev.filter((p) => p.id !== viewing.id));
             setViewing(null);
+          }}
+        />
+      )}
+
+      {cropping && (
+        <PhotoCropper
+          src={cropping.src}
+          onCancel={() => setCropping(null)}
+          onDone={(src) => {
+            put(cropping.slot, src);
+            setCropping(null);
           }}
         />
       )}
@@ -390,10 +418,12 @@ function PhotoViewer({
   photo,
   onClose,
   onRemove,
+  onCrop,
 }: {
   photo: ProgressPhoto;
   onClose: () => void;
   onRemove: () => void;
+  onCrop: () => void;
 }) {
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -484,6 +514,13 @@ function PhotoViewer({
           {POSE_LABEL[photo.pose]} &middot; {prettyDate(photo.takenOn)}
         </span>
         <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={onCrop}
+            className="px-2 py-1 text-sm font-semibold text-white"
+          >
+            Crop
+          </button>
           <button
             type="button"
             onClick={() => setConfirmRemove(true)}

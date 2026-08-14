@@ -7,7 +7,7 @@ import { useScrollLock } from "@/lib/scroll-lock";
 
 // Matches the thumb width in globals.css. The thumb's centre can only reach
 // half a thumb in from each end, so that's the range a touch maps onto.
-const THUMB = 22;
+const THUMB = 28;
 const STEP = 10;
 
 export function CheckInRow({
@@ -82,9 +82,15 @@ export function CheckInRow({
   }
 
   return (
+    /* The divider runs the full width of the card, negative margins undoing
+       the card's own padding, so each row reads as its own band. */
     <div
       className="py-3"
-      style={{ borderBottom: isLast ? "none" : "1px solid var(--color-border)" }}
+      style={{
+        borderBottom: isLast ? "none" : "1px solid var(--color-border)",
+        marginInline: "-1rem",
+        paddingInline: "1rem",
+      }}
     >
       {/* Name and score on top, controls underneath: the top of the row was
           getting crowded once both buttons were finger-sized. */}
@@ -142,7 +148,9 @@ export function CheckInRow({
         style={{ "--slider-fill": sliderFill(value) } as React.CSSProperties}
       />
 
-      <div className="mt-1 flex justify-between px-0.5">
+      {/* The markers sit tight under the track. That space is what pays for
+          the thicker slider without the row growing. */}
+      <div className="mt-0.5 flex justify-between px-0.5">
         {[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((tick) => (
           <span
             key={tick}
@@ -154,16 +162,31 @@ export function CheckInRow({
         ))}
       </div>
 
-      <div className="mt-1 flex items-center justify-between">
+      {/* Both drawn rather than typed. The old glyphs were thin outlines at
+          text size and read as decoration rather than buttons. */}
+      <div className="flex items-center justify-between">
         {why ? (
           <button
             type="button"
             onClick={() => setWhyOpen(true)}
             aria-label={`About ${label}`}
-            className="-ml-2 flex h-10 w-10 items-center justify-center rounded-full text-lg"
+            className="-ml-1.5 flex h-11 w-11 items-center justify-center rounded-full"
             style={{ color: "var(--color-text-muted)" }}
           >
-            ⓘ
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              aria-hidden
+            >
+              <circle cx="12" cy="12" r="9.25" />
+              <path d="M12 11.2v5.4" />
+              <path d="M12 7.5v.2" strokeWidth="2.9" />
+            </svg>
           </button>
         ) : (
           <span />
@@ -175,10 +198,21 @@ export function CheckInRow({
           type="button"
           onClick={() => (open ? setOpen(false) : startEditing())}
           aria-label={saved ? `Edit your comment on ${label}` : `Leave a comment on ${label}`}
-          className="-mr-2 flex h-10 w-10 items-center justify-center rounded-full text-lg"
+          className="-mr-1.5 flex h-11 w-11 items-center justify-center rounded-full"
           style={{ color: saved ? "var(--color-brand)" : "var(--color-text-muted)" }}
         >
-          💬
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M20.5 11.7a7.8 7.8 0 0 1-8.5 7.8 8.6 8.6 0 0 1-2.9-.5L4 21l1.6-4.6a7.7 7.7 0 0 1-.8-3.4 7.8 7.8 0 0 1 8-7.7 7.8 7.8 0 0 1 7.7 6.4z" />
+          </svg>
         </button>
       </div>
 
@@ -228,10 +262,20 @@ export function CheckInRow({
                 type="button"
                 onClick={() => setWhyOpen(false)}
                 aria-label="Close"
-                className="-mr-2 -mt-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xl leading-none"
+                className="-mr-2 -mt-1.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
                 style={{ color: "var(--color-text-muted)" }}
               >
-                &times;
+                <svg
+                  width="26"
+                  height="26"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2.6"
+                  strokeLinecap="round"
+                  aria-hidden
+                >
+                  <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
               </button>
             </div>
 

@@ -53,8 +53,8 @@ export function DayCheckIn({
   return (
     <>
       <section
-        className="rounded-[var(--radius-lg)] border p-4"
-        style={{ borderColor: "var(--color-border)" }}
+        className="overflow-hidden rounded-[var(--radius-lg)] border-2 p-4"
+        style={{ borderColor: "color-mix(in srgb, var(--color-brand) 40%, var(--color-border))" }}
       >
         <div className="mb-1 flex items-center justify-between gap-2">
           <h2 className="text-sm font-bold" style={{ color: "var(--color-text)" }}>
@@ -132,8 +132,8 @@ export function DayCheckIn({
       </section>
 
       <section
-        className="rounded-[var(--radius-lg)] border p-4"
-        style={{ borderColor: "var(--color-border)" }}
+        className="overflow-hidden rounded-[var(--radius-lg)] border-2 p-4"
+        style={{ borderColor: "color-mix(in srgb, var(--color-brand) 40%, var(--color-border))" }}
       >
         <h2 className="mb-1 text-sm font-semibold" style={{ color: "var(--color-text)" }}>
           Mind, Body &amp; Spirit

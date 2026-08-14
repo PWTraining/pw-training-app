@@ -104,7 +104,7 @@ export function EditableStats({
                     value={stat.value}
                     onChange={(e) => update(stat.id, { value: e.target.value })}
                     aria-label={`${stat.label} value`}
-                    className="w-32 shrink-0 rounded-[var(--radius-sm)] border px-2 py-1 text-sm outline-none"
+                    className="w-36 shrink-0 rounded-[var(--radius-sm)] border px-2 py-1 text-sm outline-none"
                     style={{
                       borderColor: "var(--color-border)",
                       background: "var(--color-bg)",
@@ -118,28 +118,36 @@ export function EditableStats({
                     ))}
                   </select>
                 ) : (
+                  /* Three fields: what it is, the number, and the unit it was
+                     measured in. The unit stays editable so a row they add
+                     themselves can be reps, minutes, anything. */
                   <span className="flex shrink-0 items-center gap-1">
                     <input
                       type="text"
-                      inputMode={stat.unit ? "decimal" : "text"}
+                      inputMode="decimal"
                       value={stat.value}
                       onChange={(e) => update(stat.id, { value: e.target.value })}
                       aria-label={`${stat.label} value`}
-                      className="w-20 rounded-[var(--radius-sm)] border px-2 py-1 text-right text-sm outline-none"
+                      className="w-16 rounded-[var(--radius-sm)] border px-2 py-1 text-right text-sm outline-none"
                       style={{
                         borderColor: "var(--color-border)",
                         background: "var(--color-bg)",
                         color: "var(--color-text)",
                       }}
                     />
-                    {stat.unit && (
-                      <span
-                        className="w-6 text-left text-sm"
-                        style={{ color: "var(--color-text-muted)" }}
-                      >
-                        {stat.unit}
-                      </span>
-                    )}
+                    <input
+                      type="text"
+                      value={stat.unit ?? ""}
+                      onChange={(e) => update(stat.id, { unit: e.target.value })}
+                      placeholder="unit"
+                      aria-label={`${stat.label} unit`}
+                      className="w-12 rounded-[var(--radius-sm)] border px-1.5 py-1 text-center text-sm outline-none"
+                      style={{
+                        borderColor: "var(--color-border)",
+                        background: "var(--color-bg)",
+                        color: "var(--color-text)",
+                      }}
+                    />
                   </span>
                 )}
 
@@ -158,12 +166,21 @@ export function EditableStats({
                 <span className="flex-1 text-sm" style={{ color: "var(--color-text)" }}>
                   {stat.label}
                 </span>
-                <span
-                  className="text-sm font-semibold tabular-nums"
-                  style={{ color: "var(--color-text)" }}
-                >
-                  {stat.value}
-                  {stat.unit}
+                {/* Number and unit kept apart, so a column of readings lines
+                    up on the digits. */}
+                <span className="flex shrink-0 items-baseline gap-1">
+                  <span
+                    className="text-sm font-semibold tabular-nums"
+                    style={{ color: "var(--color-text)" }}
+                  >
+                    {stat.value}
+                  </span>
+                  <span
+                    className="w-8 text-left text-xs font-medium"
+                    style={{ color: "var(--color-text-muted)" }}
+                  >
+                    {stat.unit}
+                  </span>
                 </span>
               </>
             )}

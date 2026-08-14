@@ -47,9 +47,6 @@ export default function ProfilePage() {
             <h1 className="text-xl font-bold" style={{ color: "var(--color-text)" }}>
               {MOCK_PROFILE.name}
             </h1>
-            <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
-              {MOCK_PROFILE.tagline} &middot; since {MOCK_PROFILE.startDate}
-            </p>
             {/* Age ticks over on a date the server can't know in the viewer's
                 timezone, so let the client's number win. */}
             <p
